@@ -274,7 +274,6 @@
             margin-bottom: 1rem;
         }
 
-        /* NEW: EXPIRED BADGE STYLE */
         .expired-badge {
             background: rgba(255, 0, 102, 0.2);
             border: 1px solid #ff0066;
@@ -301,7 +300,6 @@
             margin-top: 1.5rem;
         }
         
-        /* NEW: Disabled button style */
         .card-btn:disabled {
             background: rgba(100, 100, 100, 0.2);
             border-color: rgba(100, 100, 100, 0.4);
@@ -371,7 +369,6 @@
             line-height: 1;
         }
         
-        /* NEW: LOADER STYLE */
         #loader {
             color: #00ffff;
             font-size: 2rem;
@@ -570,15 +567,14 @@
         // -----------------------------
 
         // --- SCHOLARSHIP DATA ---
-        // This is now loaded from Supabase!
-        let allScholarships = []; // This will hold the master list
-        let shownScholarships = []; // This will hold the filtered/sorted list
+        let allScholarships = []; 
+        let shownScholarships = [];
         // ------------------------------------
 
         let user = null;
         let isSorted = false; 
 
-        // --- doSignup ---
+        // --- doSignup (MODIFIED to log in user) ---
         async function doSignup() {
             const name = document.getElementById('signupName').value.trim();
             const grade = parseInt(document.getElementById('signupGrade').value);
@@ -593,6 +589,8 @@
             }
 
             try {
+                // This single command creates the user in 'auth'
+                // and our SQL Trigger creates the profile in 'users'
                 const { data, error } = await _supabase.auth.signUp({
                     email: email,
                     password: password,
@@ -609,8 +607,9 @@
 
                 if (error) throw error;
                 
-                alert('Signup successful! Please check your email for a confirmation link.');
-                goToLogin(); 
+                // Since "Confirm email" is OFF, the onAuthStateChange
+                // listener will now fire and log the user in.
+                // No more alert needed!
 
             } catch (error) {
                 console.error("Signup Error:", error);
@@ -666,7 +665,6 @@
             document.getElementById('profileState').value = user.state;
             document.getElementById('profileEmail').value = user.email;
             
-            // Set the master list and render it
             shownScholarships = allScholarships;
             render(shownScholarships);
             updateStats();
@@ -674,14 +672,12 @@
 
         // --- RENDER (MODIFIED for Expired Badge) ---
         function render(items) {
-            shownScholarships = items; // Update the 'shown' list
+            shownScholarships = items; 
             
-            // Hide loader and show list
             document.getElementById('loader').style.display = 'none';
             document.getElementById('list').style.display = 'grid';
 
-            const today = new Date(); // Get today's date once
-            // Set time to 00:00:00 to compare dates only
+            const today = new Date(); 
             today.setHours(0, 0, 0, 0); 
 
             const html = items.map(s => {
@@ -689,7 +685,6 @@
                 const matched = user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board);
                 const saved = userBookmarks.includes(s.id);
                 
-                // NEW: Real-time deadline check
                 const deadlineDate = new Date(s.deadline);
                 const isExpired = deadlineDate < today;
 
@@ -723,7 +718,6 @@
 
         // --- showDetail (MODIFIED to remove PDF) ---
         function showDetail(id) {
-            // Find the scholarship from the master list
             const s = allScholarships.find(x => x.id === id); 
             document.getElementById('modalTitle').textContent = s.name;
             document.getElementById('modalBody').innerHTML = `
@@ -750,7 +744,7 @@
             if (idx > -1) user.bookmarks.splice(idx, 1);
             else user.bookmarks.push(id);
             
-            render(shownScholarships); // Optimistic UI update
+            render(shownScholarships); 
 
             try {
                 const { error } = await _supabase
@@ -772,7 +766,6 @@
             if (!user) return;
             const matched = allScholarships.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
             
-            // NEW: Update total scholarships count
             document.getElementById('totalNum').textContent = allScholarships.length;
             document.getElementById('matchedNum').textContent = matched.length;
             document.getElementById('savedNum').textContent = (user.bookmarks || []).length;
@@ -794,15 +787,13 @@
 
         // --- sortDeadlines ---
         function sortDeadlines() {
-            // Sort the 'shownScholarships' array (whatever is currently visible)
             shownScholarships.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
             isSorted = true;
-            render(shownScholarships); // Re-render the list in sorted order
+            render(shownScholarships); 
         }
 
         // --- doSearch ---
         function doSearch(q) {
-            // Always filter from the master 'allScholarships' list
             let filtered = allScholarships.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || s.description.toLowerCase().includes(q.toLowerCase()));
             
             if(isSorted) {
@@ -850,7 +841,6 @@
                 user.board = newBoard;
                 user.state = newState;
                 
-                // Re-render dashboard to show new name and re-calculate matches
                 showDashboard();
                 
                 closeProfileModal();
@@ -908,8 +898,8 @@
                 } else {
                     // All data loaded successfully
                     user = profile; 
-                    allScholarships = scholarships; // Save to master list
-                    showDashboard(); // This will hide loader and render
+                    allScholarships = scholarships; 
+                    showDashboard(); 
                 }
             } else {
                 // User is logged out
@@ -918,7 +908,7 @@
                 shownScholarships = [];
                 document.getElementById('loginPage').style.display = 'flex';
                 document.getElementById('signupPage').style.display = 'none';
-                document.getElementById_('dashboardPage').style.display = 'none';
+                document.getElementById('dashboardPage').style.display = 'none';
                 document.getElementById('userInfo').style.display = 'none';
             }
         });
