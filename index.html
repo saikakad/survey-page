@@ -556,25 +556,22 @@
         </div>
     </div>
 
-
     <script>
         // --- SUPABASE CONFIG ---
-        const SUPABASE_URL = 'https://dizupsskxccdgttrdnub.supabase.co'; // 👈 PASTE YOUR URL HERE
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpenVwc3NreGNjZGd0dHJkbnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NDA0MTAsImV4cCI6MjA3NzIxNjQxMH0.d2oQ1YYMBA2Z50qyzs7E2niv78lUQIqX6JxR4_numeo';   // 👈 PASTE YOUR 'anon' KEY HERE
+        const SUPABASE_URL = 'https://dizupsskxccdgttrdnub.supabase.co'; // 👈 PASTE YOUR URL HERE (from Step 3)
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpenVwc3NreGNjZGd0dHJkbnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NDA0MTAsImV4cCI6MjA3NzIxNjQxMH0.d2oQ1YYMBA2Z50qyzs7E2niv78lUQIqX6JxR4_numeo';   // 👈 PASTE YOUR 'anon' KEY HERE (from Step 3)
         
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         // -----------------------------
 
-        // --- SCHOLARSHIP DATA ---
+        // --- GLOBAL VARIABLES ---
         let allScholarships = []; 
         let shownScholarships = [];
-        // ------------------------------------
-
         let user = null;
         let isSorted = false; 
 
-        // --- doSignup (MODIFIED to log in user) ---
+        // --- doSignup (Logs in user immediately) ---
         async function doSignup() {
             const name = document.getElementById('signupName').value.trim();
             const grade = parseInt(document.getElementById('signupGrade').value);
@@ -589,8 +586,6 @@
             }
 
             try {
-                // This single command creates the user in 'auth'
-                // and our SQL Trigger creates the profile in 'users'
                 const { data, error } = await _supabase.auth.signUp({
                     email: email,
                     password: password,
@@ -607,9 +602,8 @@
 
                 if (error) throw error;
                 
-                // Since "Confirm email" is OFF, the onAuthStateChange
-                // listener will now fire and log the user in.
-                // No more alert needed!
+                // No alert needed. The onAuthStateChange listener
+                // will automatically detect the new user and log them in.
 
             } catch (error) {
                 console.error("Signup Error:", error);
@@ -659,6 +653,7 @@
             document.getElementById('userName').textContent = user.name;
             document.getElementById('welcomeName').textContent = user.name;
             
+            // Pre-fill profile form
             document.getElementById('profileName').value = user.name;
             document.getElementById('profileGrade').value = user.grade;
             document.getElementById('profileBoard').value = user.board;
@@ -670,15 +665,16 @@
             updateStats();
         }
 
-        // --- RENDER (MODIFIED for Expired Badge) ---
+        // --- RENDER (With Real-time Deadline Check) ---
         function render(items) {
             shownScholarships = items; 
             
+            // Hide loader and show scholarship list
             document.getElementById('loader').style.display = 'none';
             document.getElementById('list').style.display = 'grid';
 
             const today = new Date(); 
-            today.setHours(0, 0, 0, 0); 
+            today.setHours(0, 0, 0, 0); // Compare dates, not times
 
             const html = items.map(s => {
                 const userBookmarks = user.bookmarks || []; 
@@ -714,9 +710,8 @@
             }).join('');
             document.getElementById('list').innerHTML = html;
         }
-        // ---------------------------------
-
-        // --- showDetail (MODIFIED to remove PDF) ---
+        
+        // --- showDetail (Tips Modal) ---
         function showDetail(id) {
             const s = allScholarships.find(x => x.id === id); 
             document.getElementById('modalTitle').textContent = s.name;
@@ -733,18 +728,20 @@
             `;
             document.getElementById('modal').style.display = 'flex';
         }
-        // -----------------------------------
 
-        // --- toggleSave ---
+        // --- toggleSave (Bookmarks) ---
         async function toggleSave(id) {
             if (!user) return;
             if (!user.bookmarks) user.bookmarks = [];
 
             const idx = user.bookmarks.indexOf(id);
-            if (idx > -1) user.bookmarks.splice(idx, 1);
-            else user.bookmarks.push(id);
+            if (idx > -1) {
+                user.bookmarks.splice(idx, 1);
+            } else {
+                user.bookmarks.push(id);
+            }
             
-            render(shownScholarships); 
+            render(shownScholarships); // Update UI immediately
 
             try {
                 const { error } = await _supabase
@@ -755,6 +752,7 @@
             } catch (error) {
                 console.error("Bookmark Error:", error);
                 alert("Error saving bookmark.");
+                // Rollback if error
                 if (idx > -1) user.bookmarks.push(id);
                 else user.bookmarks.splice(user.bookmarks.indexOf(id), 1);
                 render(shownScholarships);
@@ -771,7 +769,7 @@
             document.getElementById('savedNum').textContent = (user.bookmarks || []).length;
         }
 
-        // --- showMatched ---
+        // --- Filter/Sort Functions ---
         function showMatched() {
             if (!user) return;
             isSorted = false; 
@@ -779,20 +777,17 @@
             render(matched);
         }
 
-        // --- showAll ---
         function showAll() {
             isSorted = false; 
             render(allScholarships);
         }
 
-        // --- sortDeadlines ---
         function sortDeadlines() {
             shownScholarships.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
             isSorted = true;
             render(shownScholarships); 
         }
 
-        // --- doSearch ---
         function doSearch(q) {
             let filtered = allScholarships.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || s.description.toLowerCase().includes(q.toLowerCase()));
             
@@ -802,12 +797,11 @@
             render(filtered);
         }
 
-        // --- closeModal ---
+        // --- Modal Controls ---
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
         }
         
-        // --- Profile Modal Functions ---
         function showProfileModal() {
             document.getElementById('profileModal').style.display = 'flex';
         }
@@ -836,11 +830,13 @@
                     .eq('id', user.id);
                 if (error) throw error;
                 
+                // Update local user object
                 user.name = newName;
                 user.grade = newGrade;
                 user.board = newBoard;
                 user.state = newState;
                 
+                // Refresh dashboard to show new name and re-calculate matches
                 showDashboard();
                 
                 closeProfileModal();
@@ -860,7 +856,7 @@
             }
         }
 
-        // --- goToSignup, goToLogin ---
+        // --- Page Navigation ---
         function goToSignup() {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('signupPage').style.display = 'flex';
@@ -871,10 +867,10 @@
             document.getElementById('loginPage').style.display = 'flex';
         }
 
-        // --- Auth State Listener (MODIFIED to fetch scholarships) ---
+        // --- MASTER AUTH LISTENER (Handles all session logic) ---
         _supabase.auth.onAuthStateChange(async (event, session) => {
             if (session) {
-                // User is logged in, show loader
+                // User is logged in, show loader while we fetch data
                 document.getElementById('loader').style.display = 'block';
                 document.getElementById('list').style.display = 'none';
 
@@ -899,7 +895,7 @@
                     // All data loaded successfully
                     user = profile; 
                     allScholarships = scholarships; 
-                    showDashboard(); 
+                    showDashboard(); // This will hide loader and render
                 }
             } else {
                 // User is logged out
