@@ -558,8 +558,8 @@
 
     <script>
         // --- SUPABASE CONFIG ---
-        const SUPABASE_URL = 'https://dizupsskxccdgttrdnub.supabase.co'; // 👈 PASTE YOUR URL HERE (from Step 3)
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpenVwc3NreGNjZGd0dHJkbnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NDA0MTAsImV4cCI6MjA3NzIxNjQxMH0.d2oQ1YYMBA2Z50qyzs7E2niv78lUQIqX6JxR4_numeo';   // 👈 PASTE YOUR 'anon' KEY HERE (from Step 3)
+        const SUPABASE_URL = 'YOUR_PROJECT_URL'; // 👈 PASTE YOUR URL HERE
+        const SUPABASE_KEY = 'YOUR_ANON_KEY';   // 👈 PASTE YOUR 'anon' KEY HERE
         
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -602,9 +602,6 @@
 
                 if (error) throw error;
                 
-                // No alert needed. The onAuthStateChange listener
-                // will automatically detect the new user and log them in.
-
             } catch (error) {
                 console.error("Signup Error:", error);
                 alert(error.message);
@@ -653,7 +650,6 @@
             document.getElementById('userName').textContent = user.name;
             document.getElementById('welcomeName').textContent = user.name;
             
-            // Pre-fill profile form
             document.getElementById('profileName').value = user.name;
             document.getElementById('profileGrade').value = user.grade;
             document.getElementById('profileBoard').value = user.board;
@@ -669,12 +665,11 @@
         function render(items) {
             shownScholarships = items; 
             
-            // Hide loader and show scholarship list
             document.getElementById('loader').style.display = 'none';
             document.getElementById('list').style.display = 'grid';
 
             const today = new Date(); 
-            today.setHours(0, 0, 0, 0); // Compare dates, not times
+            today.setHours(0, 0, 0, 0); 
 
             const html = items.map(s => {
                 const userBookmarks = user.bookmarks || []; 
@@ -741,7 +736,7 @@
                 user.bookmarks.push(id);
             }
             
-            render(shownScholarships); // Update UI immediately
+            render(shownScholarships); 
 
             try {
                 const { error } = await _supabase
@@ -752,7 +747,6 @@
             } catch (error) {
                 console.error("Bookmark Error:", error);
                 alert("Error saving bookmark.");
-                // Rollback if error
                 if (idx > -1) user.bookmarks.push(id);
                 else user.bookmarks.splice(user.bookmarks.indexOf(id), 1);
                 render(shownScholarships);
@@ -830,13 +824,11 @@
                     .eq('id', user.id);
                 if (error) throw error;
                 
-                // Update local user object
                 user.name = newName;
                 user.grade = newGrade;
                 user.board = newBoard;
                 user.state = newState;
                 
-                // Refresh dashboard to show new name and re-calculate matches
                 showDashboard();
                 
                 closeProfileModal();
@@ -870,32 +862,24 @@
         // --- MASTER AUTH LISTENER (Handles all session logic) ---
         _supabase.auth.onAuthStateChange(async (event, session) => {
             if (session) {
-                // User is logged in, show loader while we fetch data
                 document.getElementById('loader').style.display = 'block';
                 document.getElementById('list').style.display = 'none';
 
-                // 1. Fetch User Profile
-                const { data: profile, error: profileError } = await _supabase
-                    .from('users')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single(); 
+                // Fetch User Profile AND Scholarships at the same time
+                const [profileResponse, scholarshipsResponse] = await Promise.all([
+                    _supabase.from('users').select('*').eq('id', session.user.id).single(),
+                    _supabase.from('scholarships').select('*')
+                ]);
 
-                // 2. Fetch ALL Scholarships
-                const { data: scholarships, error: scholarshipError } = await _supabase
-                    .from('scholarships')
-                    .select('*');
-
-                if (profileError) {
-                    console.error("Error fetching profile:", profileError);
-                } else if (scholarshipError) {
-                    console.error("Error fetching scholarships:", scholarshipError);
+                if (profileResponse.error) {
+                    console.error("Error fetching profile:", profileResponse.error);
+                } else if (scholarshipsResponse.error) {
+                    console.error("Error fetching scholarships:", scholarshipsResponse.error);
                     alert("Could not load scholarships. Please refresh.");
                 } else {
-                    // All data loaded successfully
-                    user = profile; 
-                    allScholarships = scholarships; 
-                    showDashboard(); // This will hide loader and render
+                    user = profileResponse.data; 
+                    allScholarships = scholarshipsResponse.data; 
+                    showDashboard(); 
                 }
             } else {
                 // User is logged out
