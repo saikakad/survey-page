@@ -1,288 +1,639 @@
-<script>
-    // --- NEW: FIREBASE CONFIG ---
-    // Paste your config object from Step 1 here
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievo - Scholarship Finder (Local Storage Version)</title>
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    // -----------------------------
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Base Styles (Mostly Unchanged) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
+            color: #e0e0e0; min-height: 100vh;
+        }
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; padding: 1.5rem 2rem;
+            background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3); z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 900;
+            background: linear-gradient(45deg, #00ffff, #00ff88);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .user-info { color: #00ffff; font-weight: 600; display: flex; align-items: center; gap: 1.5rem; }
+        .profile-icon { font-size: 1.5rem; cursor: pointer; transition: transform 0.2s; }
+        .profile-icon:hover { transform: scale(1.2); }
+        /* NEW: Header Button Style */
+        .header-btn {
+            background: rgba(0, 255, 136, 0.2); border: 1px solid #00ff88; padding: 0.4rem 0.8rem;
+            border-radius: 15px; font-size: 0.9rem; color: #00ff88; cursor: pointer; transition: all 0.3s;
+        }
+        .header-btn:hover { background: rgba(0, 255, 136, 0.4); color: #fff; }
 
-    // --- UPDATED DATA WITH 'applyLink' ---
-    const data = [
-        {id:1,name:"NTSE",gradeMin:10,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-15",reward:"₹1,25,000/year",description:"Premier scholarship",tips:["Practice MAT daily","Cover NCERT","Solve previous papers"],applyLink:"https://ncert.nic.in/ntse.php"},
-        {id:2,name:"KVPY (Replaced by INSPIRE)",gradeMin:11,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-30",reward:"₹5,000-7,000/month",description:"Science aptitude",tips:["Strong PCM concepts","Reference books","Aptitude practice"],applyLink:"https://www.online-inspire.gov.in/"},
-        {id:3,name:"National Science Olympiad",gradeMin:8,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-20",reward:"International Exposure",description:"HBCSE olympiads",tips:["NCERT first","Olympiad problems","Discussion groups"],applyLink:"https://olympiads.hbcse.tifr.res.in/science-olympiad/"},
-        {id:4,name:"Math Olympiad (INMO)",gradeMin:8,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-12-01",reward:"IMO Selection",description:"Mathematical olympiad",tips:["Master proofs","Competition books","Mathematical reasoning"],applyLink:"https://olympiads.hbcse.tifr.res.in/mathematical-olympiad/"},
-        {id:5,name:"NSO (SOF)",gradeMin:1,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹50,000",description:"SOF science olympiad",tips:["Complete NCERT","SOF papers","Logical reasoning"],applyLink:"https://sofworld.org/nso"},
-        {id:6,name:"IMO (SOF)",gradeMin:1,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-11-05",reward:"₹50,000",description:"SOF math olympiad",tips:["Strong basics","Mental math","Shortcuts"],applyLink:"https://sofworld.org/imo"},
-        {id:7,name:"Cyber Olympiad (NCO)",gradeMin:1,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-25",reward:"₹25,000",description:"Computer olympiad",tips:["Computer basics","MS Office","Internet safety"],applyLink:"https://sofworld.org/nco"},
-        {id:8,name:"Navodaya Selection (JNVST)",gradeMin:6,gradeMax:6,board:"Both",subject:"General",deadline:"2025-10-31",reward:"Free Education",description:"JNV admission",tips:["Mental ability","Arithmetic","Language"],applyLink:"https://navodaya.gov.in/nvs/en/Admission-JNVST/JNVST-class/"},
-        {id:9,name:"Rashtriya Avishkar Abhiyan",gradeMin:6,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-12-15",reward:"Funding",description:"Innovation",tips:["Unique ideas","Research","Models"],applyLink:"https://samagra.education.gov.in/raa.html"},
-        {id:10,name:"Ignite Awards",gradeMin:6,gradeMax:10,board:"Both",subject:"General",deadline:"2025-12-20",reward:"₹25,000",description:"Tech innovations",tips:["Problem solving","Creative solutions","Reports"],applyLink:"https://nif.org.in/ignite"},
-        {id:11,name:"CBSE Merit Scholarship",gradeMin:10,gradeMax:12,board:"CBSE",subject:"General",deadline:"2025-08-15",reward:"₹1,000/month",description:"CBSE students",tips:["Score 90%+","NCERT","Board papers"],applyLink:"https://www.cbse.gov.in/cbsenew/scholar.html"},
-        {id:12,name:"Inspire Scholarship (SHE)",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-09-30",reward:"₹80,000/year",description:"DST scholarship",tips:["95%+ target","Science focus","Practicals"],applyLink:"https://www.online-inspire.gov.in/"},
-        {id:13,name:"NMMS",gradeMin:8,gradeMax:8,board:"Both",subject:"General",deadline:"2025-11-30",reward:"₹12,000/year",description:"Merit scholarship",tips:["Class 8 syllabus","Mental ability","Aptitude"],applyLink:"https://scholarships.gov.in/"},
-        {id:14,name:"ONGC Scholarship",gradeMin:9,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-15",reward:"₹48,000/year",description:"ONGC scholarship",tips:["60%+ marks","Aptitude","GK"],applyLink:"https://ongcscholar.org/"},
-        {id:15,name:"Jindal Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-20",reward:"₹15,000/year",description:"Merit based",tips:["Consistent performance","Documentation","Board prep"],applyLink:"https://www.sitaramjindalfoundation.org/scholarships.php"},
-        {id:16,name:"Indian Oil Scholarship",gradeMin:4,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-10",reward:"₹2,000/month",description:"IOC scholarship",tips:["60%+ score","Focus weak subjects","Regular study"],applyLink:"https://iocl.com/scholarships"},
-        {id:17,name:"Swami Dayanand Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-30",reward:"₹6,000/year",description:"Merit scholarship",tips:["75%+ target","Core subjects","Revision"],applyLink:"https://www.swamidayanand.org/"},
-        {id:18,name:"LIC Golden Jubilee",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-15",reward:"₹20,000",description:"For weaker sections",tips:["60%+ maintain","Documents","Board prep"],applyLink:"https://licindia.in/Bottom-Links/Golden-Jubilee-Foundation/Scholarship-Scheme"},
-        {id:19,name:"MCM Scholarship (Minority)",gradeMin:6,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-01",reward:"₹10,000/year",description:"Minority scholarship",tips:["50%+ marks","Performance","Papers"],applyLink:"https://scholarships.gov.in/"},
-        {id:20,name:"Vahani Scholarship",gradeMin:5,gradeMax:7,board:"Both",subject:"General",deadline:"2025-10-20",reward:"₹15,000/year",description:"Underprivileged",tips:["Excellence","Certificates","Attendance"],applyLink:"https://www.vahanischolarship.com/"},
-        {id:21,name:"Kalpana Chawla Scholarship",gradeMin:9,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹30,000/year",description:"Girls in science",tips:["Science focus","STEM","60%+ marks"],applyLink:"https://scholarships.gov.in/"},
-        {id:22,name:"Netaji Subhas (SVMCM)",gradeMin:10,gradeMax:12,board:"State",subject:"General",deadline:"2025-09-10",reward:"₹10,000/year",description:"State board (WB)",tips:["State syllabus","Patterns","75%+ min"],applyLink:"https://svmcm.wbhed.gov.in/"},
-        {id:23,name:"Pratibha Kiran (MP)",gradeMin:12,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-25",reward:"₹5,000/year",description:"Girls merit (MP)",tips:["60%+ target","Core subjects","Sample papers"],applyLink:"https://scholarshipportal.mp.nic.in/"},
-        {id:24,name:"AICTE Pragati",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-05",reward:"₹30,000/year",description:"Girls technical",tips:["Science math","Aptitude","Documents"],applyLink:"https://www.aicte-india.org/schemes/students-development-schemes/Pragati"},
-        {id:25,name:"Young Scientist (YUVIKA)",gradeMin:8,gradeMax:11,board:"Both",subject:"Science",deadline:"2025-12-10",reward:"Training",description:"ISRO research",tips:["Curiosity","Projects","Interview"],applyLink:"https://www.isro.gov.in/YUVIKA.html"},
-        {id:26,name:"English Olympiad (IEO)",gradeMin:1,gradeMax:12,board:"Both",subject:"English",deadline:"2025-11-08",reward:"₹50,000",description:"SOF IEO",tips:["Grammar","Vocabulary","Comprehension"],applyLink:"https://sofworld.org/ieo"},
-        {id:27,name:"GK Olympiad (IGKO)",gradeMin:1,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-22",reward:"₹25,000",description:"SOF General knowledge",tips:["Newspapers","Current affairs","Geography"],applyLink:"https://sofworld.org/igko"}
-    ];
-    // ------------------------------------
+        .auth-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 2rem; }
+        .auth-box {
+            background: rgba(20, 20, 40, 0.8); backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 255, 255, 0.4); border-radius: 20px; padding: 3rem;
+            max-width: 500px; width: 100%; box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
+        }
+        .auth-title { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; text-align: center; margin-bottom: 2rem; color: #00ffff; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #00ffff; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea { /* Added textarea */
+            width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 255, 255, 0.3); border-radius: 10px; color: #fff; font-size: 1rem;
+            font-family: 'Exo 2', sans-serif; /* Ensure textarea uses same font */
+        }
+        .form-group textarea { min-height: 60px; resize: vertical; } /* Textarea specific */
+        .form-group select option { background: #1a0a2e; color: #e0e0e0; }
+        .btn {
+            width: 100%; padding: 1rem; background: linear-gradient(45deg, #8a2be2, #00ffff);
+            border: none; border-radius: 10px; color: #fff; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; margin-top: 1rem;
+        }
+        .btn-save { background: linear-gradient(45deg, #00ff88, #00ffff); }
+        .btn-remove { background: linear-gradient(45deg, #ff0066, #ff4d94); } /* Style for remove button */
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0, 255, 255, 0.7); }
+        .switch-text { text-align: center; margin-top: 1.5rem; color: #aaa; }
+        .switch-link { color: #00ffff; cursor: pointer; text-decoration: underline; font-weight: 600; }
+        .dashboard-page { padding-top: 6rem; padding-bottom: 2rem; }
+        .welcome {
+            background: linear-gradient(90deg, rgba(138, 43, 226, 0.4), rgba(0, 255, 255, 0.4));
+            border: 2px solid rgba(0, 255, 255, 0.5); border-radius: 15px; padding: 2rem;
+            margin: 0 2rem 2rem 2rem; text-align: center;
+        }
+        .welcome h2 { font-family: 'Orbitron', sans-serif; color: #00ffff; margin-bottom: 0.5rem; font-size: 2rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; padding: 0 2rem 2rem 2rem; } /* Adjusted minmax */
+        .stat-card {
+            background: rgba(20, 20, 40, 0.7); border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px; padding: 1.5rem; text-align: center; /* Adjusted padding */
+        }
+        .stat-number { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; color: #00ffff; font-weight: 900; } /* Adjusted size */
+        .stat-label { color: #aaa; margin-top: 0.5rem; font-size: 0.9rem;}
+        .controls {
+             padding: 0 2rem 2rem 2rem; display: flex;
+             flex-wrap: wrap; gap: 1rem;
+             border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+             padding-bottom: 2rem; margin-bottom: 2rem;
+        }
+        .search-box { flex: 1; min-width: 250px; margin-bottom: 1rem;}
+        .search-box input {
+            width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 255, 255, 0.3); border-radius: 25px; color: #fff; font-size: 1rem;
+        }
+        .filter-buttons-container { width: 100%; display: flex; flex-wrap: wrap; gap: 0.8rem; }
+        .filter-btn {
+            padding: 0.7rem 1.2rem; background: rgba(138, 43, 226, 0.3); /* Adjusted padding */
+            border: 2px solid rgba(138, 43, 226, 0.5); border-radius: 20px; color: #e0e0e0;
+            cursor: pointer; transition: all 0.3s; flex-grow: 1; font-size: 0.9rem; /* Adjusted size */
+        }
+        .filter-btn.active {
+            background: rgba(0, 255, 255, 0.4); border-color: rgba(0, 255, 255, 0.7);
+            color: #fff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+        .scholarships { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; padding: 0 2rem; }
+        .card {
+            background: rgba(20, 20, 40, 0.7); border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px; padding: 2rem; transition: all 0.4s; display: flex; flex-direction: column; /* Ensure button stays at bottom */
+        }
+        .card-content { flex-grow: 1; } /* Allow content to grow */
+        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0, 255, 255, 0.4); }
+        .card-title { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; color: #00ffff; margin-bottom: 1rem; }
+        .matched-badge {
+            background: rgba(0, 255, 136, 0.2); border: 1px solid #00ff88; padding: 0.3rem 0.8rem;
+            border-radius: 15px; font-size: 0.85rem; color: #00ff88; display: inline-block; margin-bottom: 1rem;
+        }
+        .expired-badge {
+            background: rgba(255, 0, 102, 0.2); border: 1px solid #ff0066; padding: 0.3rem 0.8rem;
+            border-radius: 15px; font-size: 0.85rem; color: #ff0066; display: inline-block; margin-bottom: 1rem;
+        }
+        .card-info { margin: 0.8rem 0; color: #ccc; }
+        .card-info strong { color: #00ff88; }
+        .card-actions { display: flex; gap: 0.8rem; margin-top: 1.5rem; } /* Reduced gap */
+        .card-btn:disabled {
+            background: rgba(100, 100, 100, 0.2); border-color: rgba(100, 100, 100, 0.4);
+            color: #888; cursor: not-allowed;
+        }
+        .card-btn {
+            flex: 1; padding: 0.7rem; background: rgba(0, 255, 255, 0.2); /* Adjusted padding */
+            border: 2px solid rgba(0, 255, 255, 0.5); border-radius: 10px; color: #00ffff;
+            cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.9rem; /* Adjusted size */
+        }
+        /* New "Apply & Track" button style */
+        .apply-track-btn {
+            background: rgba(0, 255, 136, 0.2); border-color: rgba(0, 255, 136, 0.5); color: #00ff88;
+        }
+         .apply-track-btn:hover { background: rgba(0, 255, 136, 0.4); color: #fff; }
 
-    let user = null; 
-    // let users = ... (This is no longer needed, data is in Firebase)
-    let shown = data;
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.9); z-index: 2000; align-items: center; justify-content: center; padding: 2rem;
+        }
+        .modal-content {
+            background: rgba(20, 20, 40, 0.95); border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 20px; padding: 2.5rem; max-width: 90vw; width: 100%; max-height: 85vh; overflow-y: auto; /* Adjusted max width/height */
+        }
+        .modal-content.profile-modal-content { /* Profile modal inherits from auth-box */
+             background: rgba(20, 20, 40, 0.8); backdrop-filter: blur(20px); max-width: 500px;
+            border: 2px solid rgba(0, 255, 255, 0.4); box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
+        }
+        .close-btn { float: right; font-size: 2rem; color: #ff0066; cursor: pointer; line-height: 1; }
 
-    // --- MODIFIED: doSignup ---
-    // Now an 'async' function to handle database operations
-    async function doSignup() {
-        const name = document.getElementById('signupName').value.trim();
-        const grade = parseInt(document.getElementById('signupGrade').value);
-        const board = document.getElementById('signupBoard').value;
-        const state = document.getElementById('signupState').value.trim();
-        const email = document.getElementById('signupEmail').value.trim();
-        const password = document.getElementById('signupPassword').value;
+        /* --- NEW: Application Tracking Modal Styles --- */
+        .app-tracking-item {
+            background: rgba(30, 30, 50, 0.7); border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .app-tracking-title { color: #00ffff; font-size: 1.2rem; margin-bottom: 1rem; font-family: 'Orbitron', sans-serif;}
+        .app-tracking-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .app-tracking-details .form-group { margin-bottom: 0; } /* Remove extra margin */
+        .app-tracking-details label { font-size: 0.9rem; color: #aaa;}
+        .app-tracking-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+        .app-tracking-actions button { flex-basis: 150px; font-size: 0.9rem; padding: 0.7rem; }
+        /* --- End Application Tracking --- */
 
-        if (!name || !grade || !board || !state || !email || !password) {
-            alert('Fill all fields!');
-            return;
+
+        @media (max-width: 768px) {
+            .scholarships { grid-template-columns: 1fr; }
+            .filter-buttons-container { justify-content: center; }
+            .filter-btn { flex-grow: 0; }
+            .stats { grid-template-columns: 1fr; } /* Stack stats on small screens */
+            .modal-content { max-width: 95vw; }
+            .app-tracking-details { grid-template-columns: 1fr; } /* Stack details */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🎓 Achievo</div>
+        <div class="user-info" id="userInfo" style="display:none;">
+            <button class="header-btn" onclick="showApplicationsModal()">📝 My Applications</button>
+            <span id="userName"></span>
+            <span class="profile-icon" onclick="showProfileModal()">👤</span>
+            <span onclick="doLogout()" style="color:#ff0066;cursor:pointer;">Logout</span>
+        </div>
+    </div>
+
+    <div class="auth-page" id="loginPage">
+        <div class="auth-box">
+            <h1 class="auth-title">Login</h1>
+            <div class="form-group"><label>Email</label><input type="email" id="loginEmail"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="loginPassword"></div>
+            <button class="btn" onclick="doLogin()">Login</button>
+            <div class="switch-text">Don't have an account? <span class="switch-link" onclick="goToSignup()">Sign Up</span></div>
+        </div>
+    </div>
+
+    <div class="auth-page" id="signupPage" style="display:none;">
+        <div class="auth-box">
+            <h1 class="auth-title">Sign Up</h1>
+            <div class="form-group"><label>Name</label><input type="text" id="signupName"></div>
+            <div class="form-group"><label>Grade</label><select id="signupGrade"><option value="">Select</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
+            <div class="form-group"><label>Board</label><select id="signupBoard"><option value="">Select</option><option value="CBSE">CBSE</option><option value="State">State</option></select></div>
+            <div class="form-group"><label>State</label><input type="text" id="signupState"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="signupEmail"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="signupPassword"></div>
+            <button class="btn" onclick="doSignup()">Create Account</button>
+            <div class="switch-text">Already have account? <span class="switch-link" onclick="goToLogin()">Login</span></div>
+        </div>
+    </div>
+
+    <div class="dashboard-page" id="dashboardPage" style="display:none;">
+        <div class="welcome">
+            <h2>Welcome, <span id="welcomeName"></span>! 🎉</h2>
+            <p>Scholarships matched for your profile</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card"><div class="stat-number" id="totalNum">0</div><div class="stat-label">Total</div></div>
+            <div class="stat-card"><div class="stat-number" id="matchedNum">0</div><div class="stat-label">Matched</div></div>
+            <div class="stat-card"><div class="stat-number" id="savedNum">0</div><div class="stat-label">Saved (Bookmarks)</div></div>
+            <div class="stat-card"><div class="stat-number" id="trackedNum">0</div><div class="stat-label">Tracked Applications</div></div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box"> <input type="text" placeholder="🔍 Search..." onkeyup="doSearch(this.value)"> </div>
+            <div class="filter-buttons-container">
+                 <button class="filter-btn active" id="filter-all" onclick="showAll()">📋 All</button>
+                 <button class="filter-btn" id="filter-matched" onclick="showMatched()">✨ Matched</button>
+                 <button class="filter-btn" id="filter-Science" onclick="filterBySubject('Science')">🔬 Science</button>
+                 <button class="filter-btn" id="filter-Math" onclick="filterBySubject('Math')">🧮 Math</button>
+                 <button class="filter-btn" id="filter-English" onclick="filterBySubject('English')">📚 English</button>
+                 <button class="filter-btn" id="filter-General" onclick="filterBySubject('General')">💡 General</button>
+                 <button class="filter-btn" onclick="sortByNameAZ()">Sort A-Z 🔼</button>
+                 <button class="filter-btn" onclick="sortByNameZA()">Sort Z-A 🔽</button>
+            </div>
+        </div>
+
+        <div class="scholarships" id="list"></div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content"><span class="close-btn" onclick="closeModal()">×</span><h2 style="color:#00ffff;font-family:'Orbitron'" id="modalTitle"></h2><div id="modalBody" style="margin-top:1.5rem;"></div></div>
+    </div>
+
+    <div class="modal" id="profileModal">
+        <div class="modal-content profile-modal-content"> <span class="close-btn" onclick="closeProfileModal()">×</span> <h1 class="auth-title">Your Profile</h1> <div class="form-group"><label>Name</label><input type="text" id="profileName"></div> <div class="form-group"><label>Grade</label><select id="profileGrade"><option value="">Select</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div> <div class="form-group"><label>Board</label><select id="profileBoard"><option value="">Select</option><option value="CBSE">CBSE</option><option value="State">State</option></select></div> <div class="form-group"><label>State</label><input type="text" id="profileState"></div> <div class="form-group"><label>Email</label><input type="email" id="profileEmail" disabled></div> <button class="btn btn-save" onclick="doUpdateProfile()">Save Changes</button> </div>
+    </div>
+
+    <div class="modal" id="applicationsModal">
+         <div class="modal-content">
+             <span class="close-btn" onclick="closeApplicationsModal()">×</span>
+             <h1 class="auth-title">My Tracked Applications</h1>
+             <div id="trackedApplicationsList">
+                 </div>
+         </div>
+    </div>
+
+    <script>
+        // --- SCHOLARSHIP DATA (Hard-coded) ---
+        const data = [
+             {id:1,name:"NTSE",gradeMin:10,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-15",reward:"₹1,25,000/year",description:"Premier scholarship",tips:["Practice MAT daily","Cover NCERT","Solve previous papers"],applyLink:"https://ncert.nic.in/ntse.php"},
+             {id:2,name:"KVPY (Replaced by INSPIRE)",gradeMin:11,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-30",reward:"₹5,000-7,000/month",description:"Science aptitude",tips:["Strong PCM concepts","Reference books","Aptitude practice"],applyLink:"https://www.online-inspire.gov.in/"},
+             {id:3,name:"National Science Olympiad",gradeMin:8,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-20",reward:"International Exposure",description:"HBCSE olympiads",tips:["NCERT first","Olympiad problems","Discussion groups"],applyLink:"https://olympiads.hbcse.tifr.res.in/science-olympiad/"},
+             {id:4,name:"Math Olympiad (INMO)",gradeMin:8,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-12-01",reward:"IMO Selection",description:"Mathematical olympiad",tips:["Master proofs","Competition books","Mathematical reasoning"],applyLink:"https://olympiads.hbcse.tifr.res.in/mathematical-olympiad/"},
+             {id:5,name:"NSO (SOF)",gradeMin:1,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹50,000",description:"SOF science olympiad",tips:["Complete NCERT","SOF papers","Logical reasoning"],applyLink:"https://sofworld.org/nso"},
+             {id:6,name:"IMO (SOF)",gradeMin:1,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-11-05",reward:"₹50,000",description:"SOF math olympiad",tips:["Strong basics","Mental math","Shortcuts"],applyLink:"https://sofworld.org/imo"},
+             {id:7,name:"Cyber Olympiad (NCO)",gradeMin:1,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-25",reward:"₹25,000",description:"Computer olympiad",tips:["Computer basics","MS Office","Internet safety"],applyLink:"https://sofworld.org/nco"},
+             {id:8,name:"Navodaya Selection (JNVST)",gradeMin:6,gradeMax:6,board:"Both",subject:"General",deadline:"2025-10-31",reward:"Free Education",description:"JNV admission",tips:["Mental ability","Arithmetic","Language"],applyLink:"https://navodaya.gov.in/nvs/en/Admission-JNVST/JNVST-class/"},
+             {id:9,name:"Rashtriya Avishkar Abhiyan",gradeMin:6,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-12-15",reward:"Funding",description:"Innovation",tips:["Unique ideas","Research","Models"],applyLink:"https://samagra.education.gov.in/raa.html"},
+             {id:10,name:"Ignite Awards",gradeMin:6,gradeMax:10,board:"Both",subject:"General",deadline:"2025-12-20",reward:"₹25,000",description:"Tech innovations",tips:["Problem solving","Creative solutions","Reports"],applyLink:"https://nif.org.in/ignite"},
+             {id:11,name:"CBSE Merit Scholarship",gradeMin:10,gradeMax:12,board:"CBSE",subject:"General",deadline:"2025-08-15",reward:"₹1,000/month",description:"CBSE students",tips:["Score 90%+","NCERT","Board papers"],applyLink:"https://www.cbse.gov.in/cbsenew/scholar.html"},
+             {id:12,name:"Inspire Scholarship (SHE)",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-09-30",reward:"₹80,000/year",description:"DST scholarship",tips:["95%+ target","Science focus","Practicals"],applyLink:"https://www.online-inspire.gov.in/"},
+             {id:13,name:"NMMS",gradeMin:8,gradeMax:8,board:"Both",subject:"General",deadline:"2025-11-30",reward:"₹12,000/year",description:"Merit scholarship",tips:["Class 8 syllabus","Mental ability","Aptitude"],applyLink:"https://scholarships.gov.in/"},
+             {id:14,name:"ONGC Scholarship",gradeMin:9,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-15",reward:"₹48,000/year",description:"ONGC scholarship",tips:["60%+ marks","Aptitude","GK"],applyLink:"https://ongcscholar.org/"},
+             {id:15,name:"Jindal Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-20",reward:"₹15,000/year",description:"Merit based",tips:["Consistent performance","Documentation","Board prep"],applyLink:"https://www.sitaramjindalfoundation.org/scholarships.php"},
+             {id:16,name:"Indian Oil Scholarship",gradeMin:4,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-10",reward:"₹2,000/month",description:"IOC scholarship",tips:["60%+ score","Focus weak subjects","Regular study"],applyLink:"https://iocl.com/scholarships"},
+             {id:17,name:"Swami Dayanand Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-30",reward:"₹6,000/year",description:"Merit scholarship",tips:["75%+ target","Core subjects","Revision"],applyLink:"https://www.swamidayanand.org/"},
+             {id:18,name:"LIC Golden Jubilee",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-15",reward:"₹20,000",description:"For weaker sections",tips:["60%+ maintain","Documents","Board prep"],applyLink:"https://licindia.in/Bottom-Links/Golden-Jubilee-Foundation/Scholarship-Scheme"},
+             {id:19,name:"MCM Scholarship (Minority)",gradeMin:6,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-01",reward:"₹10,000/year",description:"Minority scholarship",tips:["50%+ marks","Performance","Papers"],applyLink:"https://scholarships.gov.in/"},
+             {id:20,name:"Vahani Scholarship",gradeMin:5,gradeMax:7,board:"Both",subject:"General",deadline:"2025-10-20",reward:"₹15,000/year",description:"Underprivileged",tips:["Excellence","Certificates","Attendance"],applyLink:"https://www.vahanischolarship.com/"},
+             {id:21,name:"Kalpana Chawla Scholarship",gradeMin:9,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹30,000/year",description:"Girls in science",tips:["Science focus","STEM","60%+ marks"],applyLink:"https://scholarships.gov.in/"},
+             {id:22,name:"Netaji Subhas (SVMCM)",gradeMin:10,gradeMax:12,board:"State",subject:"General",deadline:"2025-09-10",reward:"₹10,000/year",description:"State board (WB)",tips:["State syllabus","Patterns","75%+ min"],applyLink:"https://svmcm.wbhed.gov.in/"},
+             {id:23,name:"Pratibha Kiran (MP)",gradeMin:12,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-25",reward:"₹5,000/year",description:"Girls merit (MP)",tips:["60%+ target","Core subjects","Sample papers"],applyLink:"https://scholarshipportal.mp.nic.in/"},
+             {id:24,name:"AICTE Pragati",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-05",reward:"₹30,000/year",description:"Girls technical",tips:["Science math","Aptitude","Documents"],applyLink:"https://www.aicte-india.org/schemes/students-development-schemes/Pragati"},
+             {id:25,name:"Young Scientist (YUVIKA)",gradeMin:8,gradeMax:11,board:"Both",subject:"Science",deadline:"2025-12-10",reward:"Training",description:"ISRO research",tips:["Curiosity","Projects","Interview"],applyLink:"https://www.isro.gov.in/YUVIKA.html"},
+             {id:26,name:"English Olympiad (IEO)",gradeMin:1,gradeMax:12,board:"Both",subject:"English",deadline:"2025-11-08",reward:"₹50,000",description:"SOF IEO",tips:["Grammar","Vocabulary","Comprehension"],applyLink:"https://sofworld.org/ieo"},
+             {id:27,name:"GK Olympiad (IGKO)",gradeMin:1,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-22",reward:"₹25,000",description:"SOF General knowledge",tips:["Newspapers","Current affairs","Geography"],applyLink:"https://sofworld.org/igko"}
+        ];
+        // ------------------------------------
+
+        // --- GLOBAL VARIABLES ---
+        let user = null;
+        let users = JSON.parse(localStorage.getItem('achievoUsers') || '[]');
+        let shownScholarships = data;
+        let activeFilter = 'all';
+        let currentSort = 'none'; // NEW: Track sort order ('none', 'az', 'za')
+
+        // --- Authentication Functions ---
+        function doSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const grade = parseInt(document.getElementById('signupGrade').value);
+            const board = document.getElementById('signupBoard').value;
+            const state = document.getElementById('signupState').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value; // Still insecure
+
+            if (!name || !grade || !board || !state || !email || !password) { alert('Fill all fields!'); return; }
+            if (users.find(u => u.email === email)) { alert('Email already registered. Please log in.'); return; }
+
+            const newUser = { id: Date.now(), name, grade, board, state, email, password, bookmarks: [], applications: [] }; // Added applications array
+            users.push(newUser);
+            localStorage.setItem('achievoUsers', JSON.stringify(users));
+            user = newUser;
+            localStorage.setItem('achievoCurrentUser', JSON.stringify(user));
+            showDashboard();
         }
 
-        try {
-            // 1. Create the user in Firebase Authentication
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            const firebaseUser = userCredential.user;
+        function doLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim(); // Trim password too
 
-            // 2. Create the user profile in Firestore
-            // We use the 'uid' from Auth as the document ID
-            const userProfile = {
-                uid: firebaseUser.uid,
-                name,
-                grade,
-                board,
-                state,
-                email,
-                bookmarks: []
-            };
+            if (!email || !password) { alert("Please enter both email and password."); return; }
+            const foundUser = users.find(u => u.email === email && u.password === password);
 
-            await db.collection("users").doc(firebaseUser.uid).set(userProfile);
-            
-            // 'user' variable is set by the onAuthStateChanged listener
-            // which will trigger automatically, so we don't need to call showDashboard() here.
-
-        } catch (error) {
-            console.error("Error signing up:", error);
-            alert(error.message); // Show Firebase error
-        }
-    }
-
-    // --- MODIFIED: doLogin ---
-    // Now an 'async' function
-    async function doLogin() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-
-        try {
-            // This just signs the user in. The onAuthStateChanged listener
-            // will handle fetching data and showing the dashboard.
-            await auth.signInWithEmailAndPassword(email, password);
-        } catch (error) {
-            console.error("Error logging in:", error);
-            alert(error.message);
-        }
-    }
-
-    function showDashboard() {
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('signupPage').style.display = 'none';
-        document.getElementById('dashboardPage').style.display = 'block';
-        document.getElementById('userInfo').style.display = 'block';
-        document.getElementById('userName').textContent = user.name;
-        document.getElementById('welcomeName').textContent = user.name;
-        
-        render(data);
-        updateStats();
-    }
-
-    // --- UNMODIFIED: render ---
-    // This function works perfectly as-is!
-    function render(items) {
-        shown = items;
-        const html = items.map(s => {
-            const matched = user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board);
-            const saved = user.bookmarks.includes(s.id);
-            // Added 🚀 Apply button
-            return `<div class="card">
-                        ${matched ? '<div class="matched-badge">✨ Matched</div>' : ''}
-                        <h3 class="card-title">${s.name}</h3>
-                        <p style="color:#aaa;margin-bottom:1rem;">${s.description}</p>
-                        <div class="card-info"><strong>Grade:</strong> ${s.gradeMin}-${s.gradeMax}</div>
-                        <div class="card-info"><strong>Board:</strong> ${s.board}</div>
-                        <div class="card-info"><strong>Deadline:</strong> ${s.deadline}</div>
-                        <div class="card-info"><strong>Reward:</strong> ${s.reward}</div>
-                        <div class="card-actions">
-                            <button class="card-btn" onclick="showDetail(${s.id})">📚 Tips</button>
-                            <button class="card-btn" onclick="toggleSave(${s.id})">${saved ? '⭐ Saved' : '💾 Save'}</button>
-                            <button class="card-btn apply-btn" onclick="window.open('${s.applyLink}', '_blank')">🚀 Apply</button>
-                        </div>
-                    </div>`;
-        }).join('');
-        document.getElementById('list').innerHTML = html;
-        updateStats();
-    }
-    // ---------------------------------
-
-    // --- UNMODIFIED: showDetail ---
-    function showDetail(id) {
-        const s = data.find(x => x.id === id);
-        // Added Apply Now button
-        document.getElementById('modalTitle').textContent = s.name;
-        document.getElementById('modalBody').innerHTML = `
-            <p><strong>Description:</strong> ${s.description}</p>
-            <p><strong>Reward:</strong> ${s.reward}</p>
-            <p><strong>Deadline:</strong> ${s.deadline}</p>
-            <h3 style="color:#00ff88;margin-top:1.5rem;">Tips:</h3>
-            <ul>${s.tips.map(t => `<li style="margin:0.5rem 0;">${t}</li>`).join('')}</ul>
-            <button class="btn" onclick="window.open('${s.applyLink}', '_blank')" style="margin-top: 2rem;">🚀 Apply Now</button>
-        `;
-        document.getElementById('modal').style.display = 'flex';
-    }
-    // -----------------------------------
-
-    // --- MODIFIED: toggleSave ---
-    // Now an 'async' function
-    async function toggleSave(id) {
-        if (!user) return; // Safety check
-
-        const idx = user.bookmarks.indexOf(id);
-        if (idx > -1) {
-            user.bookmarks.splice(idx, 1);
-        } else {
-            user.bookmarks.push(id);
-        }
-        
-        try {
-            // Update the 'bookmarks' array in Firestore
-            const userDocRef = db.collection("users").doc(user.uid);
-            await userDocRef.update({
-                bookmarks: user.bookmarks
-            });
-            
-            // Re-render the list with the new 'saved' state
-            render(shown);
-
-        } catch (error) {
-            console.error("Error saving bookmark:", error);
-            alert("Could not save bookmark.");
-            // Rollback optimistic update
-            if (idx > -1) user.bookmarks.push(id);
-            else user.bookmarks.splice(user.bookmarks.indexOf(id), 1);
-        }
-    }
-
-    // --- UNMODIFIED: updateStats ---
-    function updateStats() {
-        if (!user) return; // Safety check
-        const matched = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
-        document.getElementById('matchedNum').textContent = matched.length;
-        document.getElementById('savedNum').textContent = user.bookmarks.length;
-    }
-
-    // --- UNMODIFIED: showMatched, showAll, doSearch, closeModal ---
-    function showMatched() {
-        if (!user) return;
-        const matched = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
-        render(matched);
-    }
-
-    function showAll() {
-        render(data);
-    }
-
-    function doSearch(q) {
-        const filtered = data.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || s.description.toLowerCase().includes(q.toLowerCase()));
-        render(filtered);
-    }
-
-    function closeModal() {
-        document.getElementById('modal').style.display = 'none';
-    }
-
-    // --- MODIFIED: doLogout ---
-    // Now an 'async' function
-    async function doLogout() {
-        if (confirm('Logout?')) {
-            try {
-                await auth.signOut();
-                // onAuthStateChanged will handle hiding the dashboard
-                // but we'll reload to ensure a clean state
-                location.reload(); 
-            } catch (error) {
-                console.error("Error logging out:", error);
-                alert(error.message);
-            }
-        }
-    }
-
-    // --- UNMODIFIED: goToSignup, goToLogin ---
-    function goToSignup() {
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('signupPage').style.display = 'flex';
-    }
-
-    function goToLogin() {
-        document.getElementById('signupPage').style.display = 'none';
-        document.getElementById('loginPage').style.display = 'flex';
-    }
-
-    // --- NEW: Firebase Auth State Listener ---
-    // This replaces your 'window.onload' function.
-    // It runs when the page loads AND whenever the auth state changes (login/logout).
-    auth.onAuthStateChanged(async (firebaseUser) => {
-        if (firebaseUser) {
-            // User is logged in
-            // 1. Fetch their profile from Firestore
-            const userDoc = await db.collection("users").doc(firebaseUser.uid).get();
-            if (userDoc.exists) {
-                // 2. Set the global 'user' variable
-                user = userDoc.data();
-                // 3. Show the dashboard
+            if (foundUser) {
+                user = foundUser;
+                // Ensure applications array exists for older users
+                if (!user.applications) user.applications = [];
+                localStorage.setItem('achievoCurrentUser', JSON.stringify(user));
                 showDashboard();
             } else {
-                // Profile doesn't exist? Should not happen in normal flow.
-                // Log them out to be safe.
-                await auth.signOut();
+                alert("Incorrect email or password. Please try again.");
             }
-        } else {
-            // User is logged out
-            user = null;
-            // 1. Show the login page
-            document.getElementById('loginPage').style.display = 'flex';
-            // 2. Hide dashboard and user info
-            document.getElementById('dashboardPage').style.display = 'none';
-            document.getElementById('userInfo').style.display = 'none';
         }
-    });
 
-    // We no longer need the 'window.onload' function, 
-    // as the onAuthStateChanged listener handles all session logic.
-</script>
+        // --- UI Display Functions ---
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('signupPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('welcomeName').textContent = user.name;
+
+            document.getElementById('profileName').value = user.name;
+            document.getElementById('profileGrade').value = user.grade;
+            document.getElementById('profileBoard').value = user.board;
+            document.getElementById('profileState').value = user.state;
+            document.getElementById('profileEmail').value = user.email;
+
+            shownScholarships = data;
+            setActiveFilter('all');
+            currentSort = 'none'; // Reset sort on dashboard load
+            render(shownScholarships);
+            updateStats();
+        }
+
+        function render(items) {
+            // Apply current sort order BEFORE rendering
+            applySort(items);
+            shownScholarships = items; // Update shown list *after* sorting
+            document.getElementById('list').style.display = 'grid';
+
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+
+            const html = items.map(s => {
+                const userBookmarks = user.bookmarks || [];
+                const userApplications = user.applications || [];
+                const matched = user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board);
+                const saved = userBookmarks.includes(s.id);
+                // Check if already tracked
+                const isTracked = userApplications.some(app => app.scholarshipId === s.id);
+
+                const deadlineDate = s.deadline ? new Date(s.deadline) : null;
+                const isExpired = deadlineDate ? (deadlineDate < today) : false;
+
+                // NEW: Apply & Track button handler
+                const applyAndTrackHandler = `applyAndTrack(${s.id}, '${s.applyLink}')`;
+
+                return `<div class="card">
+                            <div class="card-content">
+                                ${matched && !isExpired ? '<div class="matched-badge">✨ Matched</div>' : ''}
+                                ${isExpired ? '<div class="expired-badge">🚫 Expired</div>' : ''}
+                                <h3 class="card-title">${s.name}</h3>
+                                <p style="color:#aaa;margin-bottom:1rem;">${s.description}</p>
+                                <div class="card-info"><strong>Grade:</strong> ${s.gradeMin}-${s.gradeMax}</div>
+                                <div class="card-info"><strong>Board:</strong> ${s.board}</div>
+                                <div class="card-info"><strong>Deadline:</strong> ${s.deadline || '—'}</div>
+                                <div class="card-info"><strong>Reward:</strong> ${s.reward}</div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="card-btn" onclick="showDetail(${s.id})">📚 Tips</button>
+                                <button class="card-btn" onclick="toggleSave(${s.id})">${saved ? '⭐ Saved' : '💾 Save'}</button>
+                                <button class="card-btn apply-track-btn" onclick="${applyAndTrackHandler}" ${isExpired ? 'disabled' : ''}>
+                                    ${isExpired ? 'Closed' : (isTracked ? '🚀 Applied' : '🚀 Apply & Track')}
+                                </button>
+                            </div>
+                        </div>`;
+            }).join('');
+            document.getElementById('list').innerHTML = html || "<p style='color:#aaa; text-align:center;'>No scholarships found matching this filter.</p>";
+        }
+
+        function showDetail(id) {
+            const s = data.find(x => x.id === id);
+            const applyAndTrackHandlerModal = `applyAndTrack(${s.id}, '${s.applyLink}')`;
+            const isTracked = (user.applications || []).some(app => app.scholarshipId === s.id);
+
+            document.getElementById('modalTitle').textContent = s.name;
+            document.getElementById('modalBody').innerHTML = `
+                <p><strong>Description:</strong> ${s.description}</p> <p><strong>Reward:</strong> ${s.reward}</p>
+                <p><strong>Deadline:</strong> ${s.deadline}</p> <h3 style="color:#00ff88;margin-top:1.5rem;">Tips:</h3>
+                <ul>${s.tips.map(t => `<li style="margin:0.5rem 0;">${t}</li>`).join('')}</ul>
+                <div style="display:flex; gap:1rem; margin-top: 2rem;">
+                   <button class="btn btn-save" onclick="${applyAndTrackHandlerModal}" style="flex:1;">
+                       ${isTracked ? '🚀 Applied (Tracked)' : '🚀 Apply & Track'}
+                   </button>
+                </div>`;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        // --- Data Interaction Functions (localStorage) ---
+        function toggleSave(id) { /* ... unchanged ... */ } // Bookmarks still work the same
+
+        // NEW: Apply and Track Function
+        function applyAndTrack(scholarshipId, applyLink) {
+            // 1. Open the application link
+            window.open(applyLink, '_blank');
+
+            // 2. Add to tracking if not already tracked
+            if (!user.applications) user.applications = [];
+            const existingAppIndex = user.applications.findIndex(app => app.scholarshipId === scholarshipId);
+
+            if (existingAppIndex === -1) { // Only add if not already present
+                user.applications.push({
+                    scholarshipId: scholarshipId,
+                    status: 'Applied', // Default status
+                    notes: ''
+                });
+                saveUserData(); // Save changes to localStorage
+                updateStats(); // Update the tracked count
+                render(shownScholarships); // Re-render to update button text
+                showApplicationsModal(); // Optionally open the tracking modal
+            } else {
+                 // Already tracked, maybe just show the modal?
+                 showApplicationsModal();
+            }
+        }
+
+        // NEW: Save User Data Helper
+        function saveUserData() {
+            // Update user in the main 'users' list and save both
+            users = users.map(u => (u.id === user.id ? user : u));
+            localStorage.setItem('achievoUsers', JSON.stringify(users));
+            localStorage.setItem('achievoCurrentUser', JSON.stringify(user));
+        }
+
+
+        function updateStats() {
+            if (!user) return;
+            const matched = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
+            document.getElementById('totalNum').textContent = data.length;
+            document.getElementById('matchedNum').textContent = matched.length;
+            document.getElementById('savedNum').textContent = (user.bookmarks || []).length;
+            document.getElementById('trackedNum').textContent = (user.applications || []).length; // Update tracked count
+        }
+
+        // --- Filter Functions ---
+        function setActiveFilter(filterId) { /* ... unchanged ... */ }
+        function showMatched() { currentSort = 'none'; /* Reset sort */ /* ... rest unchanged ... */ }
+        function showAll() { currentSort = 'none'; /* Reset sort */ /* ... rest unchanged ... */ }
+        function filterBySubject(subject) { currentSort = 'none'; /* Reset sort */ /* ... rest unchanged ... */ }
+
+        // NEW: Sorting Functions
+        function applySort(items) {
+             if (currentSort === 'az') {
+                 items.sort((a, b) => a.name.localeCompare(b.name));
+             } else if (currentSort === 'za') {
+                 items.sort((a, b) => b.name.localeCompare(a.name));
+             }
+             // No need for 'else', default is unsorted or previously filtered order
+        }
+        function sortByNameAZ() {
+            currentSort = 'az';
+            render(shownScholarships); // Re-render the currently shown list, sorted
+        }
+        function sortByNameZA() {
+            currentSort = 'za';
+            render(shownScholarships); // Re-render the currently shown list, sorted
+        }
+
+
+        function doSearch(q) {
+            const query = (q || '').toString().toLowerCase();
+            let baseList = [];
+            if (activeFilter === 'all') baseList = data;
+            else if (activeFilter === 'matched') baseList = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
+            else baseList = data.filter(s => s.subject === activeFilter);
+
+            const filtered = baseList.filter(s => {
+                const name = (s?.name || '').toString().toLowerCase();
+                const desc = (s?.description || '').toString().toLowerCase();
+                return name.includes(query) || desc.includes(query);
+            });
+            // Apply sort *after* filtering
+            applySort(filtered);
+            render(filtered);
+        }
+
+        // --- Modal Controls ---
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        function showProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
+        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+        // --- NEW: Application Modal Controls ---
+        function showApplicationsModal() {
+             renderTrackedApplications(); // Populate the list first
+             document.getElementById('applicationsModal').style.display = 'flex';
+         }
+         function closeApplicationsModal() {
+             document.getElementById('applicationsModal').style.display = 'none';
+         }
+
+        // NEW: Render Tracked Applications
+         function renderTrackedApplications() {
+             if (!user || !user.applications) return;
+             const listElement = document.getElementById('trackedApplicationsList');
+             if (user.applications.length === 0) {
+                 listElement.innerHTML = "<p style='color:#aaa; text-align:center;'>You haven't tracked any applications yet. Click 'Apply & Track' on a scholarship.</p>";
+                 return;
+             }
+
+             const html = user.applications.map((app, index) => {
+                 const scholarship = data.find(s => s.id === app.scholarshipId);
+                 if (!scholarship) return ''; // Skip if scholarship data not found
+
+                 return `
+                     <div class="app-tracking-item">
+                         <h3 class="app-tracking-title">${scholarship.name}</h3>
+                         <p style="color:#ccc; margin-bottom: 1rem;">Deadline: ${scholarship.deadline}</p>
+                         <div class="app-tracking-details">
+                              <div class="form-group">
+                                  <label for="status-${index}">Status:</label>
+                                  <select id="status-${index}" onchange="updateApplicationStatus(${index}, this.value)">
+                                      <option value="Applied" ${app.status === 'Applied' ? 'selected' : ''}>Applied</option>
+                                      <option value="Waiting" ${app.status === 'Waiting' ? 'selected' : ''}>Waiting</option>
+                                      <option value="Interviewing" ${app.status === 'Interviewing' ? 'selected' : ''}>Interviewing</option>
+                                      <option value="Offered" ${app.status === 'Offered' ? 'selected' : ''}>Offered</option>
+                                      <option value="Rejected" ${app.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+                                  </select>
+                              </div>
+                              <div class="form-group">
+                                   <label for="notes-${index}">Notes:</label>
+                                   <textarea id="notes-${index}" rows="2" onblur="updateApplicationNotes(${index}, this.value)">${app.notes || ''}</textarea>
+                              </div>
+                         </div>
+                         <div class="app-tracking-actions">
+                             <button class="btn btn-remove" onclick="removeTrackedApplication(${index})">Remove Tracking</button>
+                         </div>
+                     </div>
+                 `;
+             }).join('');
+             listElement.innerHTML = html;
+         }
+
+        // NEW: Update Application Status/Notes
+         function updateApplicationStatus(index, newStatus) {
+             if (!user || !user.applications || !user.applications[index]) return;
+             user.applications[index].status = newStatus;
+             saveUserData(); // Save changes to localStorage
+             // Optionally add a small visual confirmation?
+         }
+         function updateApplicationNotes(index, newNotes) {
+              if (!user || !user.applications || !user.applications[index]) return;
+             user.applications[index].notes = newNotes;
+             saveUserData(); // Save changes to localStorage
+         }
+
+         // NEW: Remove Tracked Application
+         function removeTrackedApplication(index) {
+             if (!user || !user.applications || !user.applications[index]) return;
+             if (confirm("Are you sure you want to stop tracking this application?")) {
+                 user.applications.splice(index, 1); // Remove from array
+                 saveUserData();
+                 updateStats(); // Update count
+                 renderTrackedApplications(); // Re-render the modal list
+                 render(shownScholarships); // Re-render main list to update button text potentially
+             }
+         }
+
+
+        // --- doUpdateProfile (Saves to localStorage) ---
+        function doUpdateProfile() {
+            if (!user) return;
+            // ... (rest of the function is unchanged) ...
+            user.name = newName; user.grade = newGrade; user.board = newBoard; user.state = newState;
+            saveUserData(); // Use helper function
+            showDashboard();
+            closeProfileModal(); alert("Profile updated successfully!");
+        }
+
+        // --- doLogout ---
+        function doLogout() {
+            if (confirm('Logout?')) {
+                user = null;
+                localStorage.removeItem('achievoCurrentUser');
+                location.reload();
+            }
+        }
+
+        // --- Page Navigation ---
+        function goToSignup() { document.getElementById('loginPage').style.display = 'none'; document.getElementById('signupPage').style.display = 'flex'; }
+        function goToLogin() { document.getElementById('signupPage').style.display = 'none'; document.getElementById('loginPage').style.display = 'flex'; }
+
+        // --- Initial Load Logic ---
+        window.onload = function() {
+            const savedUser = localStorage.getItem('achievoCurrentUser');
+            if (savedUser) {
+                user = JSON.parse(savedUser);
+                // Ensure arrays exist for compatibility
+                 if (!user.bookmarks) user.bookmarks = [];
+                 if (!user.applications) user.applications = [];
+
+                // Find the latest version from the main list (in case password was changed conceptually)
+                 const freshUser = users.find(u => u.id === user.id);
+                 if (freshUser) {
+                    user = freshUser; // Use the potentially updated user data from the main list
+                    // Ensure arrays exist on fresh user data too
+                     if (!user.bookmarks) user.bookmarks = [];
+                     if (!user.applications) user.applications = [];
+                    showDashboard();
+                 } else {
+                     // User exists in session but not in main list? Corrupt data. Clear session.
+                     localStorage.removeItem('achievoCurrentUser');
+                     document.getElementById('loginPage').style.display = 'flex';
+                 }
+
+            } else {
+                 document.getElementById('loginPage').style.display = 'flex';
+            }
+        };
+
+    </script>
+</body>
+</html>
