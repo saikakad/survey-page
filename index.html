@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Achievo - Scholarship Finder</title>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Achievo - Scholarship Finder (Local Storage Version)</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* --- Styles are unchanged from the previous version --- */
+        /* --- Styles are unchanged --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Exo 2', sans-serif;
@@ -155,7 +153,6 @@
             <div class="form-group"><label>Email</label><input type="email" id="loginEmail"></div>
             <div class="form-group"><label>Password</label><input type="password" id="loginPassword"></div>
             <button class="btn" onclick="doLogin()">Login</button>
-            <div class="switch-text"><span class="switch-link" onclick="doForgotPassword()">Forgot Password?</span></div>
             <div class="switch-text">Don't have an account? <span class="switch-link" onclick="goToSignup()">Sign Up</span></div>
         </div>
     </div>
@@ -212,10 +209,292 @@
     </div>
 
     <script>
-        // --- SUPABASE CONFIG ---
-        const SUPABASE_URL = 'https://dizupsskxccdgttrdnub.supabase.co'; // 👈 PASTE YOUR URL HERE
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpenVwc3NreGNjZGd0dHJkbnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NDA0MTAsImV4cCI6MjA3NzIxNjQxMH0.d2oQ1YYMBA2Z50qyzs7E2niv78lUQIqX6JxR4_numeo';   // 👈 PASTE YOUR 'anon' KEY HERE
+        // --- NO SUPABASE CONFIG NEEDED ---
 
-        const { createClient } = supabase;
-        if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_PROJECT_URL' || !SUPABASE_KEY || SUPABASE_KEY === 'YOUR_ANON_KEY') {
-            console
+        // --- SCHOLARSHIP DATA (Hard-coded) ---
+        const data = [
+            // Paste the full array of 27 scholarships here...
+            {id:1,name:"NTSE",gradeMin:10,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-15",reward:"₹1,25,000/year",description:"Premier scholarship",tips:["Practice MAT daily","Cover NCERT","Solve previous papers"],applyLink:"https://ncert.nic.in/ntse.php"},
+            {id:2,name:"KVPY (Replaced by INSPIRE)",gradeMin:11,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-30",reward:"₹5,000-7,000/month",description:"Science aptitude",tips:["Strong PCM concepts","Reference books","Aptitude practice"],applyLink:"https://www.online-inspire.gov.in/"},
+            {id:3,name:"National Science Olympiad",gradeMin:8,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-20",reward:"International Exposure",description:"HBCSE olympiads",tips:["NCERT first","Olympiad problems","Discussion groups"],applyLink:"https://olympiads.hbcse.tifr.res.in/science-olympiad/"},
+            {id:4,name:"Math Olympiad (INMO)",gradeMin:8,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-12-01",reward:"IMO Selection",description:"Mathematical olympiad",tips:["Master proofs","Competition books","Mathematical reasoning"],applyLink:"https://olympiads.hbcse.tifr.res.in/mathematical-olympiad/"},
+            {id:5,name:"NSO (SOF)",gradeMin:1,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹50,000",description:"SOF science olympiad",tips:["Complete NCERT","SOF papers","Logical reasoning"],applyLink:"https://sofworld.org/nso"},
+            {id:6,name:"IMO (SOF)",gradeMin:1,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-11-05",reward:"₹50,000",description:"SOF math olympiad",tips:["Strong basics","Mental math","Shortcuts"],applyLink:"https://sofworld.org/imo"},
+            {id:7,name:"Cyber Olympiad (NCO)",gradeMin:1,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-25",reward:"₹25,000",description:"Computer olympiad",tips:["Computer basics","MS Office","Internet safety"],applyLink:"https://sofworld.org/nco"},
+            {id:8,name:"Navodaya Selection (JNVST)",gradeMin:6,gradeMax:6,board:"Both",subject:"General",deadline:"2025-10-31",reward:"Free Education",description:"JNV admission",tips:["Mental ability","Arithmetic","Language"],applyLink:"https://navodaya.gov.in/nvs/en/Admission-JNVST/JNVST-class/"},
+            {id:9,name:"Rashtriya Avishkar Abhiyan",gradeMin:6,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-12-15",reward:"Funding",description:"Innovation",tips:["Unique ideas","Research","Models"],applyLink:"https://samagra.education.gov.in/raa.html"},
+            {id:10,name:"Ignite Awards",gradeMin:6,gradeMax:10,board:"Both",subject:"General",deadline:"2025-12-20",reward:"₹25,000",description:"Tech innovations",tips:["Problem solving","Creative solutions","Reports"],applyLink:"https://nif.org.in/ignite"},
+            {id:11,name:"CBSE Merit Scholarship",gradeMin:10,gradeMax:12,board:"CBSE",subject:"General",deadline:"2025-08-15",reward:"₹1,000/month",description:"CBSE students",tips:["Score 90%+","NCERT","Board papers"],applyLink:"https://www.cbse.gov.in/cbsenew/scholar.html"},
+            {id:12,name:"Inspire Scholarship (SHE)",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-09-30",reward:"₹80,000/year",description:"DST scholarship",tips:["95%+ target","Science focus","Practicals"],applyLink:"https://www.online-inspire.gov.in/"},
+            {id:13,name:"NMMS",gradeMin:8,gradeMax:8,board:"Both",subject:"General",deadline:"2025-11-30",reward:"₹12,000/year",description:"Merit scholarship",tips:["Class 8 syllabus","Mental ability","Aptitude"],applyLink:"https://scholarships.gov.in/"},
+            {id:14,name:"ONGC Scholarship",gradeMin:9,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-15",reward:"₹48,000/year",description:"ONGC scholarship",tips:["60%+ marks","Aptitude","GK"],applyLink:"https://ongcscholar.org/"},
+            {id:15,name:"Jindal Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-20",reward:"₹15,000/year",description:"Merit based",tips:["Consistent performance","Documentation","Board prep"],applyLink:"https://www.sitaramjindalfoundation.org/scholarships.php"},
+            {id:16,name:"Indian Oil Scholarship",gradeMin:4,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-10",reward:"₹2,000/month",description:"IOC scholarship",tips:["60%+ score","Focus weak subjects","Regular study"],applyLink:"https://iocl.com/scholarships"},
+            {id:17,name:"Swami Dayanand Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-30",reward:"₹6,000/year",description:"Merit scholarship",tips:["75%+ target","Core subjects","Revision"],applyLink:"https://www.swamidayanand.org/"},
+            {id:18,name:"LIC Golden Jubilee",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-15",reward:"₹20,000",description:"For weaker sections",tips:["60%+ maintain","Documents","Board prep"],applyLink:"https://licindia.in/Bottom-Links/Golden-Jubilee-Foundation/Scholarship-Scheme"},
+            {id:19,name:"MCM Scholarship (Minority)",gradeMin:6,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-01",reward:"₹10,000/year",description:"Minority scholarship",tips:["50%+ marks","Performance","Papers"],applyLink:"https://scholarships.gov.in/"},
+            {id:20,name:"Vahani Scholarship",gradeMin:5,gradeMax:7,board:"Both",subject:"General",deadline:"2025-10-20",reward:"₹15,000/year",description:"Underprivileged",tips:["Excellence","Certificates","Attendance"],applyLink:"https://www.vahanischolarship.com/"},
+            {id:21,name:"Kalpana Chawla Scholarship",gradeMin:9,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹30,000/year",description:"Girls in science",tips:["Science focus","STEM","60%+ marks"],applyLink:"https://scholarships.gov.in/"},
+            {id:22,name:"Netaji Subhas (SVMCM)",gradeMin:10,gradeMax:12,board:"State",subject:"General",deadline:"2025-09-10",reward:"₹10,000/year",description:"State board (WB)",tips:["State syllabus","Patterns","75%+ min"],applyLink:"https://svmcm.wbhed.gov.in/"},
+            {id:23,name:"Pratibha Kiran (MP)",gradeMin:12,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-25",reward:"₹5,000/year",description:"Girls merit (MP)",tips:["60%+ target","Core subjects","Sample papers"],applyLink:"https://scholarshipportal.mp.nic.in/"},
+            {id:24,name:"AICTE Pragati",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-05",reward:"₹30,000/year",description:"Girls technical",tips:["Science math","Aptitude","Documents"],applyLink:"https://www.aicte-india.org/schemes/students-development-schemes/Pragati"},
+            {id:25,name:"Young Scientist (YUVIKA)",gradeMin:8,gradeMax:11,board:"Both",subject:"Science",deadline:"2025-12-10",reward:"Training",description:"ISRO research",tips:["Curiosity","Projects","Interview"],applyLink:"https://www.isro.gov.in/YUVIKA.html"},
+            {id:26,name:"English Olympiad (IEO)",gradeMin:1,gradeMax:12,board:"Both",subject:"English",deadline:"2025-11-08",reward:"₹50,000",description:"SOF IEO",tips:["Grammar","Vocabulary","Comprehension"],applyLink:"https://sofworld.org/ieo"},
+            {id:27,name:"GK Olympiad (IGKO)",gradeMin:1,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-22",reward:"₹25,000",description:"SOF General knowledge",tips:["Newspapers","Current affairs","Geography"],applyLink:"https://sofworld.org/igko"}
+        ];
+        // ------------------------------------
+
+        // --- GLOBAL VARIABLES ---
+        let user = null; // Holds the currently logged-in user object
+        let users = JSON.parse(localStorage.getItem('achievoUsers') || '[]'); // Load all users from localStorage
+        let shownScholarships = data; // Scholarships currently displayed (can be filtered)
+        let activeFilter = 'all'; // Track active filter button ('all', 'matched', 'Science', etc.)
+
+        // --- Authentication Functions (Using localStorage) ---
+        function doSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const grade = parseInt(document.getElementById('signupGrade').value);
+            const board = document.getElementById('signupBoard').value;
+            const state = document.getElementById('signupState').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value; // NOTE: Storing password like this is insecure!
+
+            if (!name || !grade || !board || !state || !email || !password) {
+                alert('Fill all fields!'); return;
+            }
+            // Check if email already exists
+            if (users.find(u => u.email === email)) {
+                alert('Email already registered. Please log in.'); return;
+            }
+
+            // Create new user object (including password - insecure!)
+            const newUser = { id: Date.now(), name, grade, board, state, email, password, bookmarks: [] };
+            users.push(newUser);
+            localStorage.setItem('achievoUsers', JSON.stringify(users)); // Save updated user list
+            user = newUser; // Set current user
+            localStorage.setItem('achievoCurrentUser', JSON.stringify(user)); // Save current session
+            showDashboard();
+        }
+
+        function doLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) { alert("Please enter both email and password."); return; }
+
+            // Find user by email and password (insecure!)
+            const foundUser = users.find(u => u.email === email && u.password === password);
+
+            if (foundUser) {
+                user = foundUser;
+                localStorage.setItem('achievoCurrentUser', JSON.stringify(user)); // Save session
+                showDashboard();
+            } else {
+                alert("Incorrect email or password. Please try again.");
+            }
+        }
+
+        // --- UI Display Functions ---
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('signupPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('welcomeName').textContent = user.name;
+
+            // Pre-fill profile form
+            document.getElementById('profileName').value = user.name;
+            document.getElementById('profileGrade').value = user.grade;
+            document.getElementById('profileBoard').value = user.board;
+            document.getElementById('profileState').value = user.state;
+            document.getElementById('profileEmail').value = user.email;
+
+            shownScholarships = data; // Reset to full list on dashboard load
+            setActiveFilter('all');
+            render(shownScholarships);
+            updateStats();
+        }
+
+        function render(items) {
+            shownScholarships = items;
+            document.getElementById('list').style.display = 'grid';
+
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+
+            const html = items.map(s => { // Use 'data' directly
+                const userBookmarks = user.bookmarks || [];
+                const matched = user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board);
+                const saved = userBookmarks.includes(s.id);
+
+                const deadlineDate = s.deadline ? new Date(s.deadline) : null;
+                const isExpired = deadlineDate ? (deadlineDate < today) : false;
+
+                const applyClickHandler = `console.log('Apply clicked! URL:', '${s.applyLink}'); window.open('${s.applyLink}', '_blank');`;
+
+                return `<div class="card">
+                            ${matched && !isExpired ? '<div class="matched-badge">✨ Matched</div>' : ''}
+                            ${isExpired ? '<div class="expired-badge">🚫 Expired</div>' : ''}
+                            <h3 class="card-title">${s.name}</h3>
+                            <p style="color:#aaa;margin-bottom:1rem;">${s.description}</p>
+                            <div class="card-info"><strong>Grade:</strong> ${s.gradeMin}-${s.gradeMax}</div>
+                            <div class="card-info"><strong>Board:</strong> ${s.board}</div>
+                            <div class="card-info"><strong>Deadline:</strong> ${s.deadline || '—'}</div>
+                            <div class="card-info"><strong>Reward:</strong> ${s.reward}</div>
+                            <div class="card-actions">
+                                <button class="card-btn" onclick="showDetail(${s.id})">📚 Tips</button>
+                                <button class="card-btn" onclick="toggleSave(${s.id})">${saved ? '⭐ Saved' : '💾 Save'}</button>
+                                <button class="card-btn apply-btn" onclick="${applyClickHandler}" ${isExpired ? 'disabled' : ''}>${isExpired ? 'Closed' : '🚀 Apply'}</button>
+                            </div>
+                        </div>`;
+            }).join('');
+            document.getElementById('list').innerHTML = html || "<p style='color:#aaa; text-align:center;'>No scholarships found matching this filter.</p>";
+        }
+
+        function showDetail(id) {
+            const s = data.find(x => x.id === id); // Find in hard-coded data
+            const applyClickHandlerModal = `console.log('Apply Now clicked! URL:', '${s.applyLink}'); window.open('${s.applyLink}', '_blank');`;
+
+            document.getElementById('modalTitle').textContent = s.name;
+            document.getElementById('modalBody').innerHTML = `
+                <p><strong>Description:</strong> ${s.description}</p> <p><strong>Reward:</strong> ${s.reward}</p>
+                <p><strong>Deadline:</strong> ${s.deadline}</p> <h3 style="color:#00ff88;margin-top:1.5rem;">Tips:</h3>
+                <ul>${s.tips.map(t => `<li style="margin:0.5rem 0;">${t}</li>`).join('')}</ul>
+                <div style="display:flex; gap:1rem; margin-top: 2rem;">
+                   <button class="btn btn-save" onclick="${applyClickHandlerModal}" style="flex:1;">🚀 Apply Now</button>
+                </div>`;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        // --- Data Interaction Functions (Using localStorage) ---
+        function toggleSave(id) {
+            if (!user) return;
+            if (!user.bookmarks) user.bookmarks = [];
+
+            const idx = user.bookmarks.indexOf(id);
+            if (idx > -1) user.bookmarks.splice(idx, 1);
+            else user.bookmarks.push(id);
+
+            // Update user in the 'users' array and save BOTH 'users' and 'currentUser'
+            users = users.map(u => (u.id === user.id ? user : u));
+            localStorage.setItem('achievoUsers', JSON.stringify(users));
+            localStorage.setItem('achievoCurrentUser', JSON.stringify(user));
+
+            render(shownScholarships); // Update button text
+            updateStats(); // Update saved count
+        }
+
+        function updateStats() {
+            if (!user) return;
+            const matched = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
+            document.getElementById('totalNum').textContent = data.length; // Use hard-coded data length
+            document.getElementById('matchedNum').textContent = matched.length;
+            document.getElementById('savedNum').textContent = (user.bookmarks || []).length;
+        }
+
+        // --- Filter Functions (Operate on hard-coded 'data') ---
+        function setActiveFilter(filterId) {
+            activeFilter = filterId;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            const buttonElement = document.getElementById(`filter-${filterId}`);
+            if (buttonElement) buttonElement.classList.add('active');
+        }
+
+        function showMatched() {
+            if (!user) return;
+            const matched = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
+            setActiveFilter('matched');
+            render(matched);
+        }
+
+        function showAll() {
+            setActiveFilter('all');
+            render(data); // Render full hard-coded list
+        }
+
+        function filterBySubject(subject) {
+            const filtered = data.filter(s => s.subject === subject);
+            setActiveFilter(subject);
+            render(filtered);
+        }
+
+        function doSearch(q) {
+            const query = (q || '').toString().toLowerCase();
+            let baseList = [];
+            if (activeFilter === 'all') baseList = data;
+            else if (activeFilter === 'matched') baseList = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
+            else baseList = data.filter(s => s.subject === activeFilter);
+
+            const filtered = baseList.filter(s => {
+                const name = (s?.name || '').toString().toLowerCase();
+                const desc = (s?.description || '').toString().toLowerCase();
+                return name.includes(query) || desc.includes(query);
+            });
+            render(filtered);
+        }
+
+        // --- Modal Controls ---
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        function showProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
+        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+        // --- doUpdateProfile (Saves to localStorage) ---
+        function doUpdateProfile() {
+            if (!user) return;
+            const newName = document.getElementById('profileName').value;
+            const parsedGrade = parseInt(document.getElementById('profileGrade').value);
+            const newGrade = Number.isFinite(parsedGrade) ? parsedGrade : user.grade;
+            const newBoard = document.getElementById('profileBoard').value;
+            const newState = document.getElementById('profileState').value;
+
+            // Update the local 'user' object
+            user.name = newName;
+            user.grade = newGrade;
+            user.board = newBoard;
+            user.state = newState;
+
+            // Update user in the 'users' array and save BOTH 'users' and 'currentUser'
+            users = users.map(u => (u.id === user.id ? user : u));
+            localStorage.setItem('achievoUsers', JSON.stringify(users));
+            localStorage.setItem('achievoCurrentUser', JSON.stringify(user));
+
+            showDashboard(); // Refresh dashboard (applies new grade/board filters)
+            closeProfileModal(); alert("Profile updated successfully!");
+        }
+
+        // --- doLogout (Clears localStorage session) ---
+        function doLogout() {
+            if (confirm('Logout?')) {
+                user = null;
+                localStorage.removeItem('achievoCurrentUser'); // Clear session
+                location.reload(); // Reload to show login page
+            }
+        }
+
+        // --- Page Navigation ---
+        function goToSignup() { document.getElementById('loginPage').style.display = 'none'; document.getElementById('signupPage').style.display = 'flex'; }
+        function goToLogin() { document.getElementById('signupPage').style.display = 'none'; document.getElementById('loginPage').style.display = 'flex'; }
+
+        // --- Initial Load Logic (Replaces Auth Listener) ---
+        window.onload = function() {
+            const savedUser = localStorage.getItem('achievoCurrentUser');
+            if (savedUser) {
+                user = JSON.parse(savedUser);
+                // Optional: Refresh user data from the main users list in case it was updated elsewhere?
+                // For this simple version, we'll just use the saved session.
+                if (user && user.id) { // Basic check if user object is valid
+                    showDashboard();
+                } else {
+                     // Invalid saved data, show login
+                     localStorage.removeItem('achievoCurrentUser');
+                     document.getElementById('loginPage').style.display = 'flex';
+                }
+            } else {
+                 // No saved session, show login
+                 document.getElementById('loginPage').style.display = 'flex';
+            }
+        };
+
+    </script>
+</body>
+</html>
