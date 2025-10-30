@@ -9,6 +9,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* --- Styles are unchanged from the previous version --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Exo 2', sans-serif;
@@ -29,7 +30,6 @@
         .user-info { color: #00ffff; font-weight: 600; display: flex; align-items: center; gap: 1.5rem; }
         .profile-icon { font-size: 1.5rem; cursor: pointer; transition: transform 0.2s; }
         .profile-icon:hover { transform: scale(1.2); }
-
         .auth-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 2rem; }
         .auth-box {
             background: rgba(20, 20, 40, 0.8); backdrop-filter: blur(20px);
@@ -53,9 +53,7 @@
         .btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0, 255, 255, 0.7); }
         .switch-text { text-align: center; margin-top: 1.5rem; color: #aaa; }
         .switch-link { color: #00ffff; cursor: pointer; text-decoration: underline; font-weight: 600; }
-
         .dashboard-page { padding-top: 6rem; padding-bottom: 2rem; }
-
         .welcome {
             background: linear-gradient(90deg, rgba(138, 43, 226, 0.4), rgba(0, 255, 255, 0.4));
             border: 2px solid rgba(0, 255, 255, 0.5); border-radius: 15px; padding: 2rem;
@@ -80,21 +78,16 @@
             width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.5);
             border: 2px solid rgba(0, 255, 255, 0.3); border-radius: 25px; color: #fff; font-size: 1rem;
         }
-        .filter-buttons-container {
-            width: 100%; display: flex; flex-wrap: wrap; gap: 0.8rem;
-        }
+        .filter-buttons-container { width: 100%; display: flex; flex-wrap: wrap; gap: 0.8rem; }
         .filter-btn {
             padding: 0.8rem 1.5rem; background: rgba(138, 43, 226, 0.3);
             border: 2px solid rgba(138, 43, 226, 0.5); border-radius: 20px; color: #e0e0e0;
             cursor: pointer; transition: all 0.3s; flex-grow: 1;
         }
         .filter-btn.active {
-            background: rgba(0, 255, 255, 0.4);
-            border-color: rgba(0, 255, 255, 0.7);
-            color: #fff;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            background: rgba(0, 255, 255, 0.4); border-color: rgba(0, 255, 255, 0.7);
+            color: #fff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
         }
-
         .scholarships { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; padding: 0 2rem; }
         .card {
             background: rgba(20, 20, 40, 0.7); border: 2px solid rgba(0, 255, 255, 0.3);
@@ -139,7 +132,6 @@
             border: 2px solid rgba(0, 255, 255, 0.4); box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
         }
         .close-btn { float: right; font-size: 2rem; color: #ff0066; cursor: pointer; line-height: 1; }
-
         @media (max-width: 768px) {
             .scholarships { grid-template-columns: 1fr; }
             .filter-buttons-container { justify-content: center; }
@@ -226,304 +218,4 @@
 
         const { createClient } = supabase;
         if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_PROJECT_URL' || !SUPABASE_KEY || SUPABASE_KEY === 'YOUR_ANON_KEY') {
-            console.error('Supabase URL/Key not set. Please paste your project URL and anon key.');
-            alert('Supabase is not configured. Open the HTML and set SUPABASE_URL and SUPABASE_KEY.');
-        }
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-        // -----------------------------
-
-        // --- GLOBAL VARIABLES ---
-        let allScholarships = [];
-        let shownScholarships = [];
-        let user = null;
-        let activeFilter = 'all';
-
-        // --- Authentication Functions ---
-        async function doSignup() {
-            const name = document.getElementById('signupName').value.trim();
-            const grade = parseInt(document.getElementById('signupGrade').value);
-            const board = document.getElementById('signupBoard').value;
-            const state = document.getElementById('signupState').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('signupPassword').value;
-
-            if (!name || !grade || !board || !state || !email || !password) { alert('Fill all fields!'); return; }
-
-            try {
-                const { data, error } = await _supabase.auth.signUp({
-                    email: email, password: password,
-                    options: { data: { name, grade, board, state, email } }
-                });
-                if (error) throw error;
-            } catch (error) { console.error("Signup Error:", error); alert(error.message); }
-        }
-
-        // --- doLogin (With Correct Error Message) ---
-        async function doLogin() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            if (!email || !password) {
-                alert("Please enter both email and password.");
-                return;
-            }
-
-            try {
-                const { data, error } = await _supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
-
-                if (error) {
-                    if (error.message.includes("Invalid login credentials")) {
-                         alert("Incorrect email or password. Please try again.");
-                    } else {
-                         throw error; // Re-throw other errors
-                    }
-                }
-                 // If successful, onAuthStateChange handles the rest
-
-            } catch (error) {
-                console.error("Login Error:", error);
-                alert("An error occurred during login. Please check the console for details. Message: " + error.message);
-            }
-        }
-
-
-        async function doForgotPassword() {
-            const email = prompt("Please enter your email address:");
-            if (!email) return;
-            try {
-                const { data, error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href.split('?')[0] });
-                if (error) throw error;
-                alert("Password reset link sent! Please check your email.");
-            } catch (error) { alert(error.message); }
-        }
-
-        // --- UI Display Functions ---
-        function showDashboard() {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('signupPage').style.display = 'none';
-            document.getElementById('dashboardPage').style.display = 'block';
-            document.getElementById('userInfo').style.display = 'flex';
-            document.getElementById('userName').textContent = user.name;
-            document.getElementById('welcomeName').textContent = user.name;
-
-            document.getElementById('profileName').value = user.name;
-            document.getElementById('profileGrade').value = user.grade;
-            document.getElementById('profileBoard').value = user.board;
-            document.getElementById('profileState').value = user.state;
-            document.getElementById('profileEmail').value = user.email;
-
-            shownScholarships = allScholarships;
-            setActiveFilter('all');
-            render(shownScholarships);
-            updateStats();
-        }
-
-        function render(items) {
-            shownScholarships = items;
-            document.getElementById('list').style.display = 'grid';
-
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-
-            const html = items.map(raw => {
-                const s = {
-                    id: raw?.id, name: raw?.name || 'Untitled', description: raw?.description || '',
-                    gradeMin: Number(raw?.gradeMin) || 1, gradeMax: Number(raw?.gradeMax) || 12,
-                    board: raw?.board || 'Both', deadline: raw?.deadline || '', reward: raw?.reward || '',
-                    applyLink: raw?.applyLink || '#', tips: Array.isArray(raw?.tips) ? raw.tips : [],
-                    subject: raw?.subject || 'General'
-                };
-                const userBookmarks = user.bookmarks || [];
-                const matched = user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board);
-                const saved = userBookmarks.includes(s.id);
-
-                const deadlineDate = s.deadline ? new Date(s.deadline) : null;
-                const isExpired = deadlineDate ? (deadlineDate < today) : false;
-
-                return `<div class="card">
-                            ${matched && !isExpired ? '<div class="matched-badge">✨ Matched</div>' : ''}
-                            ${isExpired ? '<div class="expired-badge">🚫 Expired</div>' : ''}
-                            <h3 class="card-title">${s.name}</h3>
-                            <p style="color:#aaa;margin-bottom:1rem;">${s.description}</p>
-                            <div class="card-info"><strong>Grade:</strong> ${s.gradeMin}-${s.gradeMax}</div>
-                            <div class="card-info"><strong>Board:</strong> ${s.board}</div>
-                            <div class="card-info"><strong>Deadline:</strong> ${s.deadline || '—'}</div>
-                            <div class="card-info"><strong>Reward:</strong> ${s.reward}</div>
-                            <div class="card-actions">
-                                <button class="card-btn" onclick="showDetail(${s.id})">📚 Tips</button>
-                                <button class="card-btn" onclick="toggleSave(${s.id})">${saved ? '⭐ Saved' : '💾 Save'}</button>
-                                <button class="card-btn apply-btn" onclick="window.open('${s.applyLink}', '_blank')" ${isExpired ? 'disabled' : ''}>${isExpired ? 'Closed' : '🚀 Apply'}</button>
-                            </div>
-                        </div>`;
-            }).join('');
-            document.getElementById('list').innerHTML = html || "<p style='color:#aaa; text-align:center;'>No scholarships found matching this filter.</p>";
-        }
-
-        function showDetail(id) {
-            const s = allScholarships.find(x => x.id === id);
-            document.getElementById('modalTitle').textContent = s.name;
-            document.getElementById('modalBody').innerHTML = `
-                <p><strong>Description:</strong> ${s.description}</p> <p><strong>Reward:</strong> ${s.reward}</p>
-                <p><strong>Deadline:</strong> ${s.deadline}</p> <h3 style="color:#00ff88;margin-top:1.5rem;">Tips:</h3>
-                <ul>${s.tips.map(t => `<li style="margin:0.5rem 0;">${t}</li>`).join('')}</ul>
-                <div style="display:flex; gap:1rem; margin-top: 2rem;">
-                   <button class="btn btn-save" onclick="window.open('${s.applyLink}', '_blank')" style="flex:1;">🚀 Apply Now</button>
-                </div>`;
-            document.getElementById('modal').style.display = 'flex';
-        }
-
-        // --- Data Interaction Functions ---
-        async function toggleSave(id) {
-            if (!user) return; if (!user.bookmarks) user.bookmarks = [];
-            const idx = user.bookmarks.indexOf(id);
-            if (idx > -1) user.bookmarks.splice(idx, 1); else user.bookmarks.push(id);
-            render(shownScholarships);
-            try {
-                const { error } = await _supabase.from('users').update({ bookmarks: user.bookmarks }).eq('id', user.id);
-                if (error) throw error;
-            } catch (error) {
-                console.error("Bookmark Error:", error); alert("Error saving bookmark.");
-                if (idx > -1) user.bookmarks.push(id); else user.bookmarks.splice(user.bookmarks.indexOf(id), 1);
-                render(shownScholarships);
-            }
-        }
-
-        function updateStats() {
-            if (!user) return;
-            const matched = allScholarships.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
-            document.getElementById('totalNum').textContent = allScholarships.length;
-            document.getElementById('matchedNum').textContent = matched.length;
-            document.getElementById('savedNum').textContent = (user.bookmarks || []).length;
-        }
-
-        // --- Filter Functions ---
-        function setActiveFilter(filterId) {
-            activeFilter = filterId;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            const buttonElement = document.getElementById(`filter-${filterId}`);
-            if (buttonElement) buttonElement.classList.add('active');
-        }
-
-        function showMatched() {
-            if (!user) return;
-            const matched = allScholarships.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
-            setActiveFilter('matched');
-            render(matched);
-        }
-
-        function showAll() {
-            setActiveFilter('all');
-            render(allScholarships);
-        }
-
-        function filterBySubject(subject) {
-            const filtered = allScholarships.filter(s => s.subject === subject);
-            setActiveFilter(subject);
-            render(filtered);
-        }
-
-        function doSearch(q) {
-            const query = (q || '').toString().toLowerCase();
-            let baseList = [];
-            if (activeFilter === 'all') baseList = allScholarships;
-            else if (activeFilter === 'matched') baseList = allScholarships.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
-            else baseList = allScholarships.filter(s => s.subject === activeFilter);
-
-            const filtered = baseList.filter(s => {
-                const name = (s?.name || '').toString().toLowerCase();
-                const desc = (s?.description || '').toString().toLowerCase();
-                return name.includes(query) || desc.includes(query);
-            });
-            render(filtered);
-        }
-
-        // --- Modal Controls ---
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-        function showProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
-        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
-
-        // --- doUpdateProfile ---
-        async function doUpdateProfile() {
-            const newName = document.getElementById('profileName').value;
-            const parsedGrade = parseInt(document.getElementById('profileGrade').value);
-            const newGrade = Number.isFinite(parsedGrade) ? parsedGrade : user.grade;
-            const newBoard = document.getElementById('profileBoard').value;
-            const newState = document.getElementById('profileState').value;
-            const updates = { name: newName, grade: newGrade, board: newBoard, state: newState };
-            try {
-                const { error } = await _supabase.from('users').update(updates).eq('id', user.id);
-                if (error) throw error;
-                Object.assign(user, updates);
-                showDashboard();
-                closeProfileModal(); alert("Profile updated successfully!");
-            } catch (error) { alert("Error updating profile: " + error.message); }
-        }
-
-        // --- doLogout ---
-        async function doLogout() {
-            if (confirm('Logout?')) {
-                const { error } = await _supabase.auth.signOut();
-                if (error) alert(error.message); else location.reload();
-            }
-        }
-
-        // --- Page Navigation ---
-        function goToSignup() { document.getElementById('loginPage').style.display = 'none'; document.getElementById('signupPage').style.display = 'flex'; }
-        function goToLogin() { document.getElementById('signupPage').style.display = 'none'; document.getElementById('loginPage').style.display = 'flex'; }
-
-        // --- MASTER AUTH LISTENER ---
-        _supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session) {
-                // Fetch User Profile AND Scholarships concurrently
-                const [profileResponse, scholarshipsResponse] = await Promise.all([
-                    _supabase.from('users').select('*').eq('id', session.user.id).single(),
-                    _supabase.from('scholarships').select('*')
-                ]);
-
-                if (profileResponse.error && profileResponse.error.code === 'PGRST116') {
-                     console.warn("User profile not found, attempting to create one.");
-                     const meta = session.user.user_metadata || {};
-                     const newProfileData = {
-                         id: session.user.id, name: meta.name || 'User', grade: Number(meta.grade) || 1,
-                         board: meta.board || 'CBSE', state: meta.state || '', email: session.user.email, bookmarks: []
-                     };
-                     const { data: insertedProfile, error: insertError } = await _supabase.from('users').insert(newProfileData).select().single();
-                     if (insertError) {
-                         console.error("Critical Error: Could not create user profile:", insertError);
-                         alert("Error initializing your profile. Please contact support.");
-                         await _supabase.auth.signOut(); return;
-                     }
-                     user = insertedProfile;
-                     if (!user.bookmarks) user.bookmarks = [];
-                 } else if (profileResponse.error) {
-                     console.error("Error fetching profile:", profileResponse.error);
-                     alert("Could not load your profile. Please try again.");
-                     await _supabase.auth.signOut(); return;
-                 } else {
-                      user = profileResponse.data;
-                      if (!user.bookmarks) user.bookmarks = [];
-                 }
-
-                if (scholarshipsResponse.error) {
-                    console.error("Error fetching scholarships:", scholarshipsResponse.error);
-                    alert("Could not load scholarships. Please refresh."); return;
-                }
-
-                allScholarships = Array.isArray(scholarshipsResponse.data) ? scholarshipsResponse.data : [];
-                showDashboard();
-
-            } else {
-                // User is logged out
-                user = null; allScholarships = []; shownScholarships = [];
-                document.getElementById('loginPage').style.display = 'flex';
-                document.getElementById('signupPage').style.display = 'none';
-                document.getElementById('dashboardPage').style.display = 'none';
-                document.getElementById('userInfo').style.display = 'none';
-            }
-        });
-
-    </script>
-</body>
-</html>
+            console
