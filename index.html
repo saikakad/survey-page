@@ -3,174 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Achievo - Scholarship Finder (Local Storage Version)</title>
-
+    <title>ScholarHub - Scholarship Finder</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* --- Styles are unchanged --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Exo 2', sans-serif;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
-            color: #e0e0e0; min-height: 100vh;
+            color: #e0e0e0;
+            min-height: 100vh;
         }
+
         .header {
-            position: fixed; top: 0; left: 0; right: 0; padding: 1.5rem 2rem;
-            background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(10px);
-            border-bottom: 2px solid rgba(0, 255, 255, 0.3); z-index: 1000;
-            display: flex; justify-content: space-between; align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 2rem;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
         .logo {
-            font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
             background: linear-gradient(45deg, #00ffff, #00ff88);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .user-info { color: #00ffff; font-weight: 600; display: flex; align-items: center; gap: 1.5rem; }
-        .profile-icon { font-size: 1.5rem; cursor: pointer; transition: transform 0.2s; }
-        .profile-icon:hover { transform: scale(1.2); }
-        .auth-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 2rem; }
+
+        .user-info {
+            color: #00ffff;
+            font-weight: 600;
+        }
+
+        .auth-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
         .auth-box {
-            background: rgba(20, 20, 40, 0.8); backdrop-filter: blur(20px);
-            border: 2px solid rgba(0, 255, 255, 0.4); border-radius: 20px; padding: 3rem;
-            max-width: 500px; width: 100%; box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
+            background: rgba(20, 20, 40, 0.8);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
         }
-        .auth-title { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; text-align: center; margin-bottom: 2rem; color: #00ffff; }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; color: #00ffff; font-weight: 600; }
-        .form-group input, .form-group select {
-            width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(0, 255, 255, 0.3); border-radius: 10px; color: #fff; font-size: 1rem;
+
+        .auth-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #00ffff;
         }
-        .form-group select option { background: #1a0a2e; color: #e0e0e0; }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #00ffff;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
         .btn {
-            width: 100%; padding: 1rem; background: linear-gradient(45deg, #8a2be2, #00ffff);
-            border: none; border-radius: 10px; color: #fff; font-size: 1.1rem; font-weight: 700;
-            cursor: pointer; transition: all 0.3s; margin-top: 1rem;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(45deg, #8a2be2, #00ffff);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
         }
-        .btn-save { background: linear-gradient(45deg, #00ff88, #00ffff); }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0, 255, 255, 0.7); }
-        .switch-text { text-align: center; margin-top: 1.5rem; color: #aaa; }
-        .switch-link { color: #00ffff; cursor: pointer; text-decoration: underline; font-weight: 600; }
-        .dashboard-page { padding-top: 6rem; padding-bottom: 2rem; }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
+        }
+
+        .switch-text {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #aaa;
+        }
+
+        .switch-link {
+            color: #00ffff;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .dashboard-page {
+            padding-top: 6rem;
+            padding-bottom: 2rem;
+        }
+
         .welcome {
             background: linear-gradient(90deg, rgba(138, 43, 226, 0.4), rgba(0, 255, 255, 0.4));
-            border: 2px solid rgba(0, 255, 255, 0.5); border-radius: 15px; padding: 2rem;
-            margin: 0 2rem 2rem 2rem; text-align: center;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 0 2rem 2rem 2rem;
+            text-align: center;
         }
-        .welcome h2 { font-family: 'Orbitron', sans-serif; color: #00ffff; margin-bottom: 0.5rem; font-size: 2rem; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; padding: 0 2rem 2rem 2rem; }
+
+        .welcome h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00ffff;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 0 2rem 2rem 2rem;
+        }
+
         .stat-card {
-            background: rgba(20, 20, 40, 0.7); border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: 15px; padding: 2rem; text-align: center;
+            background: rgba(20, 20, 40, 0.7);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
         }
-        .stat-number { font-family: 'Orbitron', sans-serif; font-size: 3rem; color: #00ffff; font-weight: 900; }
-        .stat-label { color: #aaa; margin-top: 0.5rem; }
+
+        .stat-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: #00ffff;
+            font-weight: 900;
+        }
+
+        .stat-label {
+            color: #aaa;
+            margin-top: 0.5rem;
+        }
+
         .controls {
-             padding: 0 2rem 2rem 2rem; display: flex;
-             flex-wrap: wrap; gap: 1rem;
-             border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-             padding-bottom: 2rem; margin-bottom: 2rem;
+            padding: 0 2rem 2rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
-        .search-box { flex: 1; min-width: 250px; margin-bottom: 1rem;}
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
         .search-box input {
-            width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(0, 255, 255, 0.3); border-radius: 25px; color: #fff; font-size: 1rem;
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 25px;
+            color: #fff;
+            font-size: 1rem;
         }
-        .filter-buttons-container { width: 100%; display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
         .filter-btn {
-            padding: 0.8rem 1.5rem; background: rgba(138, 43, 226, 0.3);
-            border: 2px solid rgba(138, 43, 226, 0.5); border-radius: 20px; color: #e0e0e0;
-            cursor: pointer; transition: all 0.3s; flex-grow: 1;
+            padding: 0.8rem 1.5rem;
+            background: rgba(138, 43, 226, 0.3);
+            border: 2px solid rgba(138, 43, 226, 0.5);
+            border-radius: 20px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        .filter-btn.active {
-            background: rgba(0, 255, 255, 0.4); border-color: rgba(0, 255, 255, 0.7);
-            color: #fff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+
+        .scholarships {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            padding: 0 2rem;
         }
-        .scholarships { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; padding: 0 2rem; }
+
         .card {
-            background: rgba(20, 20, 40, 0.7); border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: 20px; padding: 2rem; transition: all 0.4s;
+            background: rgba(20, 20, 40, 0.7);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s;
         }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0, 255, 255, 0.4); }
-        .card-title { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; color: #00ffff; margin-bottom: 1rem; }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 255, 255, 0.4);
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            color: #00ffff;
+            margin-bottom: 1rem;
+        }
+
         .matched-badge {
-            background: rgba(0, 255, 136, 0.2); border: 1px solid #00ff88; padding: 0.3rem 0.8rem;
-            border-radius: 15px; font-size: 0.85rem; color: #00ff88; display: inline-block; margin-bottom: 1rem;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #00ff88;
+            display: inline-block;
+            margin-bottom: 1rem;
         }
-        .expired-badge {
-            background: rgba(255, 0, 102, 0.2); border: 1px solid #ff0066; padding: 0.3rem 0.8rem;
-            border-radius: 15px; font-size: 0.85rem; color: #ff0066; display: inline-block; margin-bottom: 1rem;
+
+        .card-info {
+            margin: 0.8rem 0;
+            color: #ccc;
         }
-        .card-info { margin: 0.8rem 0; color: #ccc; }
-        .card-info strong { color: #00ff88; }
-        .card-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
-        .card-btn:disabled {
-            background: rgba(100, 100, 100, 0.2); border-color: rgba(100, 100, 100, 0.4);
-            color: #888; cursor: not-allowed;
+
+        .card-info strong {
+            color: #00ff88;
         }
+
+        .card-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
         .card-btn {
-            flex: 1; padding: 0.8rem; background: rgba(0, 255, 255, 0.2);
-            border: 2px solid rgba(0, 255, 255, 0.5); border-radius: 10px; color: #00ffff;
-            cursor: pointer; font-weight: 600; transition: all 0.3s;
+            flex: 1;
+            padding: 0.8rem;
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 10px;
+            color: #00ffff;
+            cursor: pointer;
+            font-weight: 600;
         }
-        .apply-btn {
-            background: rgba(0, 255, 136, 0.2); border-color: rgba(0, 255, 136, 0.5); color: #00ff88;
-        }
-        .apply-btn:hover { background: rgba(0, 255, 136, 0.4); color: #fff; }
+
         .modal {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.9); z-index: 2000; align-items: center; justify-content: center; padding: 2rem;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
         }
+
         .modal-content {
-            background: rgba(20, 20, 40, 0.95); border: 2px solid rgba(0, 255, 255, 0.5);
-            border-radius: 20px; padding: 2.5rem; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;
+            background: rgba(20, 20, 40, 0.95);
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
-        .modal-content.profile-modal-content {
-             background: rgba(20, 20, 40, 0.8); backdrop-filter: blur(20px);
-            border: 2px solid rgba(0, 255, 255, 0.4); box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
+
+        .close-btn {
+            float: right;
+            font-size: 2rem;
+            color: #ff0066;
+            cursor: pointer;
         }
-        .close-btn { float: right; font-size: 2rem; color: #ff0066; cursor: pointer; line-height: 1; }
+
         @media (max-width: 768px) {
-            .scholarships { grid-template-columns: 1fr; }
-            .filter-buttons-container { justify-content: center; }
-            .filter-btn { flex-grow: 0; }
+            .scholarships {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="logo">🎓 Achievo</div>
+        <div class="logo">🎓 ScholarHub</div>
         <div class="user-info" id="userInfo" style="display:none;">
-            <span id="userName"></span>
-            <span class="profile-icon" onclick="showProfileModal()">👤</span>
-            <span onclick="doLogout()" style="color:#ff0066;cursor:pointer;">Logout</span>
+            <span id="userName"></span> | <span onclick="doLogout()" style="color:#ff0066;cursor:pointer;">Logout</span>
         </div>
     </div>
 
+    <!-- LOGIN -->
     <div class="auth-page" id="loginPage">
         <div class="auth-box">
             <h1 class="auth-title">Login</h1>
-            <div class="form-group"><label>Email</label><input type="email" id="loginEmail"></div>
-            <div class="form-group"><label>Password</label><input type="password" id="loginPassword"></div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword">
+            </div>
             <button class="btn" onclick="doLogin()">Login</button>
-            <div class="switch-text">Don't have an account? <span class="switch-link" onclick="goToSignup()">Sign Up</span></div>
+            <div class="switch-text">
+                Don't have an account? <span class="switch-link" onclick="goToSignup()">Sign Up</span>
+            </div>
         </div>
     </div>
 
+    <!-- SIGNUP -->
     <div class="auth-page" id="signupPage" style="display:none;">
         <div class="auth-box">
             <h1 class="auth-title">Sign Up</h1>
-            <div class="form-group"><label>Name</label><input type="text" id="signupName"></div>
-            <div class="form-group"><label>Grade</label><select id="signupGrade"><option value="">Select</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
-            <div class="form-group"><label>Board</label><select id="signupBoard"><option value="">Select</option><option value="CBSE">CBSE</option><option value="State">State</option></select></div>
-            <div class="form-group"><label>State</label><input type="text" id="signupState"></div>
-            <div class="form-group"><label>Email</label><input type="email" id="signupEmail"></div>
-            <div class="form-group"><label>Password</label><input type="password" id="signupPassword"></div>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="signupName">
+            </div>
+            <div class="form-group">
+                <label>Grade</label>
+                <select id="signupGrade">
+                    <option value="">Select</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Board</label>
+                <select id="signupBoard">
+                    <option value="">Select</option>
+                    <option value="CBSE">CBSE</option>
+                    <option value="State">State</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>State</label>
+                <input type="text" id="signupState">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="signupEmail">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="signupPassword">
+            </div>
             <button class="btn" onclick="doSignup()">Create Account</button>
-            <div class="switch-text">Already have account? <span class="switch-link" onclick="goToLogin()">Login</span></div>
+            <div class="switch-text">
+                Already have account? <span class="switch-link" onclick="goToLogin()">Login</span>
+            </div>
         </div>
     </div>
 
+    <!-- DASHBOARD -->
     <div class="dashboard-page" id="dashboardPage" style="display:none;">
         <div class="welcome">
             <h2>Welcome, <span id="welcomeName"></span>! 🎉</h2>
@@ -178,101 +398,69 @@
         </div>
 
         <div class="stats">
-            <div class="stat-card"><div class="stat-number" id="totalNum">0</div><div class="stat-label">Total</div></div>
-            <div class="stat-card"><div class="stat-number" id="matchedNum">0</div><div class="stat-label">Matched</div></div>
-            <div class="stat-card"><div class="stat-number" id="savedNum">0</div><div class="stat-label">Saved</div></div>
+            <div class="stat-card">
+                <div class="stat-number">27</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="matchedNum">0</div>
+                <div class="stat-label">Matched</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="savedNum">0</div>
+                <div class="stat-label">Saved</div>
+            </div>
         </div>
 
         <div class="controls">
             <div class="search-box">
                 <input type="text" placeholder="🔍 Search..." onkeyup="doSearch(this.value)">
             </div>
-            <div class="filter-buttons-container">
-                 <button class="filter-btn active" id="filter-all" onclick="showAll()">📋 All</button>
-                 <button class="filter-btn" id="filter-matched" onclick="showMatched()">✨ Matched</button>
-                 <button class="filter-btn" id="filter-Science" onclick="filterBySubject('Science')">🔬 Science</button>
-                 <button class="filter-btn" id="filter-Math" onclick="filterBySubject('Math')">🧮 Math</button>
-                 <button class="filter-btn" id="filter-English" onclick="filterBySubject('English')">📚 English</button>
-                 <button class="filter-btn" id="filter-General" onclick="filterBySubject('General')">💡 General</button>
-            </div>
+            <button class="filter-btn" onclick="showMatched()">✨ Matched</button>
+            <button class="filter-btn" onclick="showAll()">📋 All</button>
         </div>
 
         <div class="scholarships" id="list"></div>
     </div>
 
     <div class="modal" id="modal">
-        <div class="modal-content"><span class="close-btn" onclick="closeModal()">×</span><h2 style="color:#00ffff;font-family:'Orbitron'" id="modalTitle"></h2><div id="modalBody" style="margin-top:1.5rem;"></div></div>
-    </div>
-
-    <div class="modal" id="profileModal">
-        <div class="modal-content profile-modal-content"><span class="close-btn" onclick="closeProfileModal()">×</span><h1 class="auth-title">Your Profile</h1><div class="form-group"><label>Name</label><input type="text" id="profileName"></div><div class="form-group"><label>Grade</label><select id="profileGrade"><option value="">Select</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div><div class="form-group"><label>Board</label><select id="profileBoard"><option value="">Select</option><option value="CBSE">CBSE</option><option value="State">State</option></select></div><div class="form-group"><label>State</label><input type="text" id="profileState"></div><div class="form-group"><label>Email</label><input type="email" id="profileEmail" disabled></div><button class="btn btn-save" onclick="doUpdateProfile()">Save Changes</button></div>
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">×</span>
+            <h2 style="color:#00ffff;font-family:'Orbitron'" id="modalTitle"></h2>
+            <div id="modalBody" style="margin-top:1.5rem;"></div>
+        </div>
     </div>
 
     <script>
-        // --- NO SUPABASE CONFIG NEEDED ---
+        const data = [{id:1,name:"NTSE",gradeMin:10,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-15",reward:"₹1,25,000/year",description:"Premier scholarship",tips:["Practice MAT daily","Cover NCERT","Solve previous papers"]},{id:2,name:"KVPY",gradeMin:11,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-30",reward:"₹5,000-7,000/month",description:"Science aptitude",tips:["Strong PCM concepts","Reference books","Aptitude practice"]},{id:3,name:"National Olympiad",gradeMin:8,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-20",reward:"International Exposure",description:"Five olympiads",tips:["NCERT first","Olympiad problems","Discussion groups"]},{id:4,name:"Math Olympiad",gradeMin:8,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-12-01",reward:"IMO Selection",description:"Mathematical olympiad",tips:["Master proofs","Competition books","Mathematical reasoning"]},{id:5,name:"NSO",gradeMin:1,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹50,000",description:"SOF science olympiad",tips:["Complete NCERT","SOF papers","Logical reasoning"]},{id:6,name:"IMO",gradeMin:1,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-11-05",reward:"₹50,000",description:"SOF math olympiad",tips:["Strong basics","Mental math","Shortcuts"]},{id:7,name:"Cyber Olympiad",gradeMin:1,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-25",reward:"₹25,000",description:"Computer olympiad",tips:["Computer basics","MS Office","Internet safety"]},{id:8,name:"Navodaya Selection",gradeMin:6,gradeMax:6,board:"Both",subject:"General",deadline:"2025-10-31",reward:"Free Education",description:"JNV admission",tips:["Mental ability","Arithmetic","Language"]},{id:9,name:"Avishkar Abhiyan",gradeMin:6,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-12-15",reward:"Funding",description:"Innovation",tips:["Unique ideas","Research","Models"]},{id:10,name:"Ignite Awards",gradeMin:6,gradeMax:10,board:"Both",subject:"General",deadline:"2025-12-20",reward:"₹25,000",description:"Tech innovations",tips:["Problem solving","Creative solutions","Reports"]},{id:11,name:"CBSE Merit",gradeMin:10,gradeMax:12,board:"CBSE",subject:"General",deadline:"2025-08-15",reward:"₹1,000/month",description:"CBSE students",tips:["Score 90%+","NCERT","Board papers"]},{id:12,name:"Inspire",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-09-30",reward:"₹80,000/year",description:"DST scholarship",tips:["95%+ target","Science focus","Practicals"]},{id:13,name:"NMMS",gradeMin:8,gradeMax:8,board:"Both",subject:"General",deadline:"2025-11-30",reward:"₹12,000/year",description:"Merit scholarship",tips:["Class 8 syllabus","Mental ability","Aptitude"]},{id:14,name:"ONGC Pragnya",gradeMin:9,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-15",reward:"₹48,000/year",description:"ONGC scholarship",tips:["60%+ marks","Aptitude","GK"]},{id:15,name:"Jindal Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-20",reward:"₹15,000/year",description:"Merit based",tips:["Consistent performance","Documentation","Board prep"]},{id:16,name:"Indian Oil",gradeMin:4,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-10",reward:"₹2,000/month",description:"IOC scholarship",tips:["60%+ score","Focus weak subjects","Regular study"]},{id:17,name:"Swami Dayanand",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-30",reward:"₹6,000/year",description:"Merit scholarship",tips:["75%+ target","Core subjects","Revision"]},{id:18,name:"LIC Golden Jubilee",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-15",reward:"₹20,000",description:"For weaker sections",tips:["60%+ maintain","Documents","Board prep"]},{id:19,name:"MCM Scholarship",gradeMin:6,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-01",reward:"₹10,000/year",description:"Minority scholarship",tips:["50%+ marks","Performance","Papers"]},{id:20,name:"Vahani",gradeMin:5,gradeMax:7,board:"Both",subject:"General",deadline:"2025-10-20",reward:"₹15,000/year",description:"Underprivileged",tips:["Excellence","Certificates","Attendance"]},{id:21,name:"Kalpana Chawla",gradeMin:9,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹30,000/year",description:"Girls in science",tips:["Science focus","STEM","60%+ marks"]},{id:22,name:"Netaji Subhas",gradeMin:10,gradeMax:12,board:"State",subject:"General",deadline:"2025-09-10",reward:"₹10,000/year",description:"State board",tips:["State syllabus","Patterns","75%+ min"]},{id:23,name:"Pratibha Kiran",gradeMin:12,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-25",reward:"₹5,000/year",description:"Girls merit",tips:["60%+ target","Core subjects","Sample papers"]},{id:24,name:"AICTE Pragati",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-05",reward:"₹30,000/year",description:"Girls technical",tips:["Science math","Aptitude","Documents"]},{id:25,name:"Young Scientist",gradeMin:8,gradeMax:11,board:"Both",subject:"Science",deadline:"2025-12-10",reward:"Training",description:"Research training",tips:["Curiosity","Projects","Interview"]},{id:26,name:"English Olympiad",gradeMin:1,gradeMax:12,board:"Both",subject:"English",deadline:"2025-11-08",reward:"₹50,000",description:"IEO",tips:["Grammar","Vocabulary","Comprehension"]},{id:27,name:"GK Olympiad",gradeMin:1,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-22",reward:"₹25,000",description:"General knowledge",tips:["Newspapers","Current affairs","Geography"]}];
 
-        // --- SCHOLARSHIP DATA (Hard-coded) ---
-        const data = [
-            // Paste the full array of 27 scholarships here...
-            {id:1,name:"NTSE",gradeMin:10,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-15",reward:"₹1,25,000/year",description:"Premier scholarship",tips:["Practice MAT daily","Cover NCERT","Solve previous papers"],applyLink:"https://ncert.nic.in/ntse.php"},
-            {id:2,name:"KVPY (Replaced by INSPIRE)",gradeMin:11,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-30",reward:"₹5,000-7,000/month",description:"Science aptitude",tips:["Strong PCM concepts","Reference books","Aptitude practice"],applyLink:"https://www.online-inspire.gov.in/"},
-            {id:3,name:"National Science Olympiad",gradeMin:8,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-20",reward:"International Exposure",description:"HBCSE olympiads",tips:["NCERT first","Olympiad problems","Discussion groups"],applyLink:"https://olympiads.hbcse.tifr.res.in/science-olympiad/"},
-            {id:4,name:"Math Olympiad (INMO)",gradeMin:8,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-12-01",reward:"IMO Selection",description:"Mathematical olympiad",tips:["Master proofs","Competition books","Mathematical reasoning"],applyLink:"https://olympiads.hbcse.tifr.res.in/mathematical-olympiad/"},
-            {id:5,name:"NSO (SOF)",gradeMin:1,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹50,000",description:"SOF science olympiad",tips:["Complete NCERT","SOF papers","Logical reasoning"],applyLink:"https://sofworld.org/nso"},
-            {id:6,name:"IMO (SOF)",gradeMin:1,gradeMax:12,board:"Both",subject:"Math",deadline:"2025-11-05",reward:"₹50,000",description:"SOF math olympiad",tips:["Strong basics","Mental math","Shortcuts"],applyLink:"https://sofworld.org/imo"},
-            {id:7,name:"Cyber Olympiad (NCO)",gradeMin:1,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-25",reward:"₹25,000",description:"Computer olympiad",tips:["Computer basics","MS Office","Internet safety"],applyLink:"https://sofworld.org/nco"},
-            {id:8,name:"Navodaya Selection (JNVST)",gradeMin:6,gradeMax:6,board:"Both",subject:"General",deadline:"2025-10-31",reward:"Free Education",description:"JNV admission",tips:["Mental ability","Arithmetic","Language"],applyLink:"https://navodaya.gov.in/nvs/en/Admission-JNVST/JNVST-class/"},
-            {id:9,name:"Rashtriya Avishkar Abhiyan",gradeMin:6,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-12-15",reward:"Funding",description:"Innovation",tips:["Unique ideas","Research","Models"],applyLink:"https://samagra.education.gov.in/raa.html"},
-            {id:10,name:"Ignite Awards",gradeMin:6,gradeMax:10,board:"Both",subject:"General",deadline:"2025-12-20",reward:"₹25,000",description:"Tech innovations",tips:["Problem solving","Creative solutions","Reports"],applyLink:"https://nif.org.in/ignite"},
-            {id:11,name:"CBSE Merit Scholarship",gradeMin:10,gradeMax:12,board:"CBSE",subject:"General",deadline:"2025-08-15",reward:"₹1,000/month",description:"CBSE students",tips:["Score 90%+","NCERT","Board papers"],applyLink:"https://www.cbse.gov.in/cbsenew/scholar.html"},
-            {id:12,name:"Inspire Scholarship (SHE)",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-09-30",reward:"₹80,000/year",description:"DST scholarship",tips:["95%+ target","Science focus","Practicals"],applyLink:"https://www.online-inspire.gov.in/"},
-            {id:13,name:"NMMS",gradeMin:8,gradeMax:8,board:"Both",subject:"General",deadline:"2025-11-30",reward:"₹12,000/year",description:"Merit scholarship",tips:["Class 8 syllabus","Mental ability","Aptitude"],applyLink:"https://scholarships.gov.in/"},
-            {id:14,name:"ONGC Scholarship",gradeMin:9,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-15",reward:"₹48,000/year",description:"ONGC scholarship",tips:["60%+ marks","Aptitude","GK"],applyLink:"https://ongcscholar.org/"},
-            {id:15,name:"Jindal Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-20",reward:"₹15,000/year",description:"Merit based",tips:["Consistent performance","Documentation","Board prep"],applyLink:"https://www.sitaramjindalfoundation.org/scholarships.php"},
-            {id:16,name:"Indian Oil Scholarship",gradeMin:4,gradeMax:12,board:"Both",subject:"General",deadline:"2025-10-10",reward:"₹2,000/month",description:"IOC scholarship",tips:["60%+ score","Focus weak subjects","Regular study"],applyLink:"https://iocl.com/scholarships"},
-            {id:17,name:"Swami Dayanand Scholarship",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-30",reward:"₹6,000/year",description:"Merit scholarship",tips:["75%+ target","Core subjects","Revision"],applyLink:"https://www.swamidayanand.org/"},
-            {id:18,name:"LIC Golden Jubilee",gradeMin:10,gradeMax:12,board:"Both",subject:"General",deadline:"2025-09-15",reward:"₹20,000",description:"For weaker sections",tips:["60%+ maintain","Documents","Board prep"],applyLink:"https://licindia.in/Bottom-Links/Golden-Jubilee-Foundation/Scholarship-Scheme"},
-            {id:19,name:"MCM Scholarship (Minority)",gradeMin:6,gradeMax:12,board:"Both",subject:"General",deadline:"2025-11-01",reward:"₹10,000/year",description:"Minority scholarship",tips:["50%+ marks","Performance","Papers"],applyLink:"https://scholarships.gov.in/"},
-            {id:20,name:"Vahani Scholarship",gradeMin:5,gradeMax:7,board:"Both",subject:"General",deadline:"2025-10-20",reward:"₹15,000/year",description:"Underprivileged",tips:["Excellence","Certificates","Attendance"],applyLink:"https://www.vahanischolarship.com/"},
-            {id:21,name:"Kalpana Chawla Scholarship",gradeMin:9,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-11-10",reward:"₹30,000/year",description:"Girls in science",tips:["Science focus","STEM","60%+ marks"],applyLink:"https://scholarships.gov.in/"},
-            {id:22,name:"Netaji Subhas (SVMCM)",gradeMin:10,gradeMax:12,board:"State",subject:"General",deadline:"2025-09-10",reward:"₹10,000/year",description:"State board (WB)",tips:["State syllabus","Patterns","75%+ min"],applyLink:"https://svmcm.wbhed.gov.in/"},
-            {id:23,name:"Pratibha Kiran (MP)",gradeMin:12,gradeMax:12,board:"Both",subject:"General",deadline:"2025-08-25",reward:"₹5,000/year",description:"Girls merit (MP)",tips:["60%+ target","Core subjects","Sample papers"],applyLink:"https://scholarshipportal.mp.nic.in/"},
-            {id:24,name:"AICTE Pragati",gradeMin:10,gradeMax:12,board:"Both",subject:"Science",deadline:"2025-10-05",reward:"₹30,000/year",description:"Girls technical",tips:["Science math","Aptitude","Documents"],applyLink:"https://www.aicte-india.org/schemes/students-development-schemes/Pragati"},
-            {id:25,name:"Young Scientist (YUVIKA)",gradeMin:8,gradeMax:11,board:"Both",subject:"Science",deadline:"2025-12-10",reward:"Training",description:"ISRO research",tips:["Curiosity","Projects","Interview"],applyLink:"https://www.isro.gov.in/YUVIKA.html"},
-            {id:26,name:"English Olympiad (IEO)",gradeMin:1,gradeMax:12,board:"Both",subject:"English",deadline:"2025-11-08",reward:"₹50,000",description:"SOF IEO",tips:["Grammar","Vocabulary","Comprehension"],applyLink:"https://sofworld.org/ieo"},
-            {id:27,name:"GK Olympiad (IGKO)",gradeMin:1,gradeMax:10,board:"Both",subject:"General",deadline:"2025-11-22",reward:"₹25,000",description:"SOF General knowledge",tips:["Newspapers","Current affairs","Geography"],applyLink:"https://sofworld.org/igko"}
-        ];
-        // ------------------------------------
+        let user = null;
+        let users = JSON.parse(localStorage.getItem('allUsers') || '[]');
+        let shown = data;
 
-        // --- GLOBAL VARIABLES ---
-        let user = null; // Holds the currently logged-in user object
-        let users = JSON.parse(localStorage.getItem('achievoUsers') || '[]'); // Load all users from localStorage
-        let shownScholarships = data; // Scholarships currently displayed (can be filtered)
-        let activeFilter = 'all'; // Track active filter button ('all', 'matched', 'Science', etc.)
-
-        // --- Authentication Functions (Using localStorage) ---
         function doSignup() {
             const name = document.getElementById('signupName').value.trim();
             const grade = parseInt(document.getElementById('signupGrade').value);
             const board = document.getElementById('signupBoard').value;
             const state = document.getElementById('signupState').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('signupPassword').value; // NOTE: Storing password like this is insecure!
+            const password = document.getElementById('signupPassword').value;
 
             if (!name || !grade || !board || !state || !email || !password) {
-                alert('Fill all fields!'); return;
-            }
-            // Check if email already exists
-            if (users.find(u => u.email === email)) {
-                alert('Email already registered. Please log in.'); return;
+                alert('Fill all fields!');
+                return;
             }
 
-            // Create new user object (including password - insecure!)
-            const newUser = { id: Date.now(), name, grade, board, state, email, password, bookmarks: [] };
-            users.push(newUser);
-            localStorage.setItem('achievoUsers', JSON.stringify(users)); // Save updated user list
-            user = newUser; // Set current user
-            localStorage.setItem('achievoCurrentUser', JSON.stringify(user)); // Save current session
+            if (users.find(u => u.email === email)) {
+                alert('Email exists!');
+                return;
+            }
+
+            user = {id:Date.now(),name,grade,board,state,email,password,bookmarks:[]};
+            users.push(user);
+            localStorage.setItem('allUsers', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
             showDashboard();
         }
 
@@ -280,221 +468,110 @@
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
 
-            if (!email || !password) { alert("Please enter both email and password."); return; }
-
-            // Find user by email and password (insecure!)
-            const foundUser = users.find(u => u.email === email && u.password === password);
-
-            if (foundUser) {
-                user = foundUser;
-                localStorage.setItem('achievoCurrentUser', JSON.stringify(user)); // Save session
-                showDashboard();
-            } else {
-                alert("Incorrect email or password. Please try again.");
+            const found = users.find(u => u.email === email && u.password === password);
+            if (!found) {
+                alert('Wrong credentials!');
+                return;
             }
+
+            user = found;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            showDashboard();
         }
 
-        // --- UI Display Functions ---
         function showDashboard() {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('signupPage').style.display = 'none';
             document.getElementById('dashboardPage').style.display = 'block';
-            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('userInfo').style.display = 'block';
             document.getElementById('userName').textContent = user.name;
             document.getElementById('welcomeName').textContent = user.name;
-
-            // Pre-fill profile form
-            document.getElementById('profileName').value = user.name;
-            document.getElementById('profileGrade').value = user.grade;
-            document.getElementById('profileBoard').value = user.board;
-            document.getElementById('profileState').value = user.state;
-            document.getElementById('profileEmail').value = user.email;
-
-            shownScholarships = data; // Reset to full list on dashboard load
-            setActiveFilter('all');
-            render(shownScholarships);
+            
+            render(data);
             updateStats();
         }
 
         function render(items) {
-            shownScholarships = items;
-            document.getElementById('list').style.display = 'grid';
-
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-
-            const html = items.map(s => { // Use 'data' directly
-                const userBookmarks = user.bookmarks || [];
+            shown = items;
+            const html = items.map(s => {
                 const matched = user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board);
-                const saved = userBookmarks.includes(s.id);
-
-                const deadlineDate = s.deadline ? new Date(s.deadline) : null;
-                const isExpired = deadlineDate ? (deadlineDate < today) : false;
-
-                const applyClickHandler = `console.log('Apply clicked! URL:', '${s.applyLink}'); window.open('${s.applyLink}', '_blank');`;
-
-                return `<div class="card">
-                            ${matched && !isExpired ? '<div class="matched-badge">✨ Matched</div>' : ''}
-                            ${isExpired ? '<div class="expired-badge">🚫 Expired</div>' : ''}
-                            <h3 class="card-title">${s.name}</h3>
-                            <p style="color:#aaa;margin-bottom:1rem;">${s.description}</p>
-                            <div class="card-info"><strong>Grade:</strong> ${s.gradeMin}-${s.gradeMax}</div>
-                            <div class="card-info"><strong>Board:</strong> ${s.board}</div>
-                            <div class="card-info"><strong>Deadline:</strong> ${s.deadline || '—'}</div>
-                            <div class="card-info"><strong>Reward:</strong> ${s.reward}</div>
-                            <div class="card-actions">
-                                <button class="card-btn" onclick="showDetail(${s.id})">📚 Tips</button>
-                                <button class="card-btn" onclick="toggleSave(${s.id})">${saved ? '⭐ Saved' : '💾 Save'}</button>
-                                <button class="card-btn apply-btn" onclick="${applyClickHandler}" ${isExpired ? 'disabled' : ''}>${isExpired ? 'Closed' : '🚀 Apply'}</button>
-                            </div>
-                        </div>`;
+                const saved = user.bookmarks.includes(s.id);
+                return <div class="card">${matched ? '<div class="matched-badge">✨ Matched</div>' : ''}<h3 class="card-title">${s.name}</h3><p style="color:#aaa;margin-bottom:1rem;">${s.description}</p><div class="card-info"><strong>Grade:</strong> ${s.gradeMin}-${s.gradeMax}</div><div class="card-info"><strong>Board:</strong> ${s.board}</div><div class="card-info"><strong>Deadline:</strong> ${s.deadline}</div><div class="card-info"><strong>Reward:</strong> ${s.reward}</div><div class="card-actions"><button class="card-btn" onclick="showDetail(${s.id})">📚 Tips</button><button class="card-btn" onclick="toggleSave(${s.id})">${saved ? '⭐ Saved' : '💾 Save'}</button></div></div>;
             }).join('');
-            document.getElementById('list').innerHTML = html || "<p style='color:#aaa; text-align:center;'>No scholarships found matching this filter.</p>";
+            document.getElementById('list').innerHTML = html;
+            updateStats();
         }
 
         function showDetail(id) {
-            const s = data.find(x => x.id === id); // Find in hard-coded data
-            const applyClickHandlerModal = `console.log('Apply Now clicked! URL:', '${s.applyLink}'); window.open('${s.applyLink}', '_blank');`;
-
+            const s = data.find(x => x.id === id);
             document.getElementById('modalTitle').textContent = s.name;
-            document.getElementById('modalBody').innerHTML = `
-                <p><strong>Description:</strong> ${s.description}</p> <p><strong>Reward:</strong> ${s.reward}</p>
-                <p><strong>Deadline:</strong> ${s.deadline}</p> <h3 style="color:#00ff88;margin-top:1.5rem;">Tips:</h3>
-                <ul>${s.tips.map(t => `<li style="margin:0.5rem 0;">${t}</li>`).join('')}</ul>
-                <div style="display:flex; gap:1rem; margin-top: 2rem;">
-                   <button class="btn btn-save" onclick="${applyClickHandlerModal}" style="flex:1;">🚀 Apply Now</button>
-                </div>`;
+            document.getElementById('modalBody').innerHTML = `<p><strong>Description:</strong> ${s.description}</p><p><strong>Reward:</strong> ${s.reward}</p><p><strong>Deadline:</strong> ${s.deadline}</p><h3 style="color:#00ff88;margin-top:1.5rem;">Tips:</h3><ul>${s.tips.map(t => <li style="margin:0.5rem 0;">${t}</li>).join('')}</ul>`;
             document.getElementById('modal').style.display = 'flex';
         }
 
-        // --- Data Interaction Functions (Using localStorage) ---
         function toggleSave(id) {
-            if (!user) return;
-            if (!user.bookmarks) user.bookmarks = [];
-
             const idx = user.bookmarks.indexOf(id);
             if (idx > -1) user.bookmarks.splice(idx, 1);
             else user.bookmarks.push(id);
-
-            // Update user in the 'users' array and save BOTH 'users' and 'currentUser'
-            users = users.map(u => (u.id === user.id ? user : u));
-            localStorage.setItem('achievoUsers', JSON.stringify(users));
-            localStorage.setItem('achievoCurrentUser', JSON.stringify(user));
-
-            render(shownScholarships); // Update button text
-            updateStats(); // Update saved count
+            
+            users = users.map(u => u.id === user.id ? user : u);
+            localStorage.setItem('allUsers', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            render(shown);
         }
 
         function updateStats() {
-            if (!user) return;
             const matched = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
-            document.getElementById('totalNum').textContent = data.length; // Use hard-coded data length
             document.getElementById('matchedNum').textContent = matched.length;
-            document.getElementById('savedNum').textContent = (user.bookmarks || []).length;
-        }
-
-        // --- Filter Functions (Operate on hard-coded 'data') ---
-        function setActiveFilter(filterId) {
-            activeFilter = filterId;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            const buttonElement = document.getElementById(`filter-${filterId}`);
-            if (buttonElement) buttonElement.classList.add('active');
+            document.getElementById('savedNum').textContent = user.bookmarks.length;
         }
 
         function showMatched() {
-            if (!user) return;
             const matched = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
-            setActiveFilter('matched');
             render(matched);
         }
 
         function showAll() {
-            setActiveFilter('all');
-            render(data); // Render full hard-coded list
-        }
-
-        function filterBySubject(subject) {
-            const filtered = data.filter(s => s.subject === subject);
-            setActiveFilter(subject);
-            render(filtered);
+            render(data);
         }
 
         function doSearch(q) {
-            const query = (q || '').toString().toLowerCase();
-            let baseList = [];
-            if (activeFilter === 'all') baseList = data;
-            else if (activeFilter === 'matched') baseList = data.filter(s => user.grade >= s.gradeMin && user.grade <= s.gradeMax && (s.board === 'Both' || s.board === user.board));
-            else baseList = data.filter(s => s.subject === activeFilter);
-
-            const filtered = baseList.filter(s => {
-                const name = (s?.name || '').toString().toLowerCase();
-                const desc = (s?.description || '').toString().toLowerCase();
-                return name.includes(query) || desc.includes(query);
-            });
+            const filtered = data.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || s.description.toLowerCase().includes(q.toLowerCase()));
             render(filtered);
         }
 
-        // --- Modal Controls ---
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-        function showProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
-        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
-
-        // --- doUpdateProfile (Saves to localStorage) ---
-        function doUpdateProfile() {
-            if (!user) return;
-            const newName = document.getElementById('profileName').value;
-            const parsedGrade = parseInt(document.getElementById('profileGrade').value);
-            const newGrade = Number.isFinite(parsedGrade) ? parsedGrade : user.grade;
-            const newBoard = document.getElementById('profileBoard').value;
-            const newState = document.getElementById('profileState').value;
-
-            // Update the local 'user' object
-            user.name = newName;
-            user.grade = newGrade;
-            user.board = newBoard;
-            user.state = newState;
-
-            // Update user in the 'users' array and save BOTH 'users' and 'currentUser'
-            users = users.map(u => (u.id === user.id ? user : u));
-            localStorage.setItem('achievoUsers', JSON.stringify(users));
-            localStorage.setItem('achievoCurrentUser', JSON.stringify(user));
-
-            showDashboard(); // Refresh dashboard (applies new grade/board filters)
-            closeProfileModal(); alert("Profile updated successfully!");
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
         }
 
-        // --- doLogout (Clears localStorage session) ---
         function doLogout() {
             if (confirm('Logout?')) {
-                user = null;
-                localStorage.removeItem('achievoCurrentUser'); // Clear session
-                location.reload(); // Reload to show login page
+                localStorage.removeItem('currentUser');
+                location.reload();
             }
         }
 
-        // --- Page Navigation ---
-        function goToSignup() { document.getElementById('loginPage').style.display = 'none'; document.getElementById('signupPage').style.display = 'flex'; }
-        function goToLogin() { document.getElementById('signupPage').style.display = 'none'; document.getElementById('loginPage').style.display = 'flex'; }
+        function goToSignup() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('signupPage').style.display = 'flex';
+        }
 
-        // --- Initial Load Logic (Replaces Auth Listener) ---
+        function goToLogin() {
+            document.getElementById('signupPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
+        }
+
         window.onload = function() {
-            const savedUser = localStorage.getItem('achievoCurrentUser');
-            if (savedUser) {
-                user = JSON.parse(savedUser);
-                // Optional: Refresh user data from the main users list in case it was updated elsewhere?
-                // For this simple version, we'll just use the saved session.
-                if (user && user.id) { // Basic check if user object is valid
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                user = JSON.parse(saved);
+                const fresh = users.find(u => u.id === user.id);
+                if (fresh) {
+                    user = fresh;
                     showDashboard();
-                } else {
-                     // Invalid saved data, show login
-                     localStorage.removeItem('achievoCurrentUser');
-                     document.getElementById('loginPage').style.display = 'flex';
                 }
-            } else {
-                 // No saved session, show login
-                 document.getElementById('loginPage').style.display = 'flex';
             }
         };
-
     </script>
 </body>
 </html>
